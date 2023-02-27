@@ -1,6 +1,7 @@
+use std::io::Read;
 use bytes::Bytes;
 use kafka_encode::{KafkaEncodable, KafkaDecodable};
-use kafka_encode::primitives::{Array, CompactArray, CompactString};
+use kafka_encode::primitives::{Array, CompactArray, CompactString, UnsignedVarInt32};
 use kafka_encode_derive::{KafkaDecodable, KafkaEncodable};
 use crate::protocol::api_key::ApiKey;
 use crate::protocol::ApiVersion;
@@ -63,8 +64,29 @@ pub struct ApiVersionsResponseV3TaggedFields {
     pub finalized_features: Option<CompactArray<FinalizedFeatureKeyV3>>
 }
 
-impl KafkaDecodable for ApiVersionsResponseV3TaggedFields {
-}
+// impl KafkaDecodable for ApiVersionsResponseV3TaggedFields {
+//     fn from_kafka_bytes<R: Read>(reader: &mut R) -> std::io::Result<ApiVersionsResponseV3TaggedFields> {
+//         let num_tagged_fields = UnsignedVarInt32::from_kafka_bytes(reader);
+//         for i in 0..num_tagged_fields {
+//             let tag: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;
+//             let size: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;
+//             match tag.0 {
+//                  0 => {
+//
+//                 },
+//                 1 => {
+//
+//                 },
+//                 2 => {
+//
+//                 },
+//                 _ => {
+//
+//                 }
+//             }
+//         }
+//     }
+// }
 
 #[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
 pub struct SupportedFeatureKeyV3 {

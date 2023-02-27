@@ -41,7 +41,8 @@ fn generate_kafka_encodable_impl_for_struct(struct_name: &Ident, fields: Iter<Fi
     let field_names = fields.map(|field| field.ident.as_ref().expect("Unable to determine field name"));
     quote::quote! {
         impl KafkaEncodable for #struct_name {
-            fn to_kafka_bytes<W: std::io::Write>(self, writer: &mut W) -> std::io::Result<()> {
+            #[tracing::instrument]
+            fn to_kafka_bytes<W: std::io::Write>(self, writer: &mut W) -> anyhow::Result<()> {
                 #(
                     self.#field_names.to_kafka_bytes(writer)?;
                 )*
@@ -54,7 +55,8 @@ fn generate_kafka_encodable_impl_for_struct(struct_name: &Ident, fields: Iter<Fi
 fn generate_kafka_decodable_impl_for_struct(struct_name: &Ident, struct_initializer_lines: Vec<proc_macro2::TokenStream>) -> proc_macro2::TokenStream {
     quote::quote! {
         impl KafkaDecodable for #struct_name {
-            fn from_kafka_bytes<R: std::io::Read>(reader: &mut R) -> std::io::Result<#struct_name> {
+            #[tracing::instrument]
+            fn from_kafka_bytes<R: std::io::Read>(reader: &mut R) -> anyhow::Result<#struct_name> {
                 let s: #struct_name = #struct_name {
                     #(
                         #struct_initializer_lines

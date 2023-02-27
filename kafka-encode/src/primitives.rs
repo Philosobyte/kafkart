@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::io::{BufWriter, Write};
 use std::ops::{Deref, DerefMut};
 use crate::{KafkaDecodable, KafkaEncodable};
 

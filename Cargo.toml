@@ -6,5 +6,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+integer-encoding = "3.0.4"
+uuid = "1.2.2"
 kafka-encode = { path = "kafka-encode" }
 kafka-encode-derive = { path = "kafka-encode-derive" }
+syn = "1.0.107"
+quote = "1.0.23"
+prettyplease = "0.1.23"
+proc-macro2 = "1.0.49"
+reqwest = "0.11.13"
+bytes = "1.3.0"
+tracing = "0.1.37"
+anyhow = "1.0.69"
+thiserror = "1.0.38"
+
+[dev-dependencies]
+tracing-test = "0.2.4"
+ctor = "0.1.26"

@@ -1,11 +1,18 @@
-use std::io::BufWriter;
 use std::str::FromStr;
-use bytes::BytesMut;
-use bytes::Bytes;
+use tracing::Level;
 use uuid::Uuid;
+use ctor::ctor;
 use crate::{KafkaDecodable, KafkaEncodable};
 use crate::primitives::{NullableArray, CompactNullableArray, CompactBytes, CompactNullableBytes, CompactNullableString, CompactString, NullableBytes, NullableString, UnsignedVarInt32, VarI32, VarI64, Array, CompactArray};
 
+#[ctor]
+fn print_spans_and_events_during_tests() {
+    tracing_subscriber::fmt::fmt()
+        .with_max_level(Level::TRACE)
+        // TODO: figure out how to make the writer to stdout not deadlock with multiple tests
+        // .with_span_events(FmtSpan::FULL)
+        .init();
+}
 
 // BOOLEAN
 #[test]
@@ -26,14 +33,14 @@ fn test_serialize_false() {
 
 #[test]
 fn test_deserialize_true() {
-    let mut read_buffer: Vec<u8> = vec![1u8];
+    let read_buffer: Vec<u8> = vec![1u8];
     let b: bool = bool::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(b, true)
 }
 
 #[test]
 fn test_deserialize_false() {
-    let mut read_buffer: Vec<u8> = vec![0u8];
+    let read_buffer: Vec<u8> = vec![0u8];
     let b: bool = bool::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(b, false)
 }
@@ -70,19 +77,19 @@ fn test_deserialize_i8() {
     let i: i8 = i8::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 0i8);
 
-    let mut read_buffer: Vec<u8> = vec![1u8];
+    read_buffer = vec![1u8];
     let i: i8 = i8::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 1i8);
 
-    let mut read_buffer: Vec<u8> = vec![127u8];
+    read_buffer = vec![127u8];
     let i: i8 = i8::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, i8::MAX);
 
-    let mut read_buffer: Vec<u8> = vec![128u8];
+    read_buffer = vec![128u8];
     let i: i8 = i8::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, i8::MIN);
 
-    let mut read_buffer: Vec<u8> = vec![255u8];
+    read_buffer = vec![255u8];
     let i: i8 = i8::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, -1i8);
 }
@@ -118,19 +125,19 @@ fn test_deserialize_i16() {
     let i: i16 = i16::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 0i16);
 
-    let mut read_buffer: Vec<u8> = vec![0u8, 1u8];
+    read_buffer = vec![0u8, 1u8];
     let i: i16 = i16::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 1i16);
 
-    let mut read_buffer: Vec<u8> = vec![127u8, 255u8];
+    read_buffer = vec![127u8, 255u8];
     let i: i16 = i16::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, i16::MAX);
 
-    let mut read_buffer: Vec<u8> = vec![128u8, 0u8];
+    read_buffer = vec![128u8, 0u8];
     let i: i16 = i16::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, i16::MIN);
 
-    let mut read_buffer: Vec<u8> = vec![255u8, 255u8];
+    read_buffer = vec![255u8, 255u8];
     let i: i16 = i16::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, -1i16);
 }
@@ -166,19 +173,19 @@ fn test_deserialize_i32() {
     let i: i32 = i32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 0i32);
 
-    let mut read_buffer: Vec<u8> = vec![0u8, 0u8, 0u8, 1u8];
+    read_buffer = vec![0u8, 0u8, 0u8, 1u8];
     let i: i32 = i32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 1i32);
 
-    let mut read_buffer: Vec<u8> = vec![127u8, 255u8, 255u8, 255u8];
+    read_buffer = vec![127u8, 255u8, 255u8, 255u8];
     let i: i32 = i32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, i32::MAX);
 
-    let mut read_buffer: Vec<u8> = vec![128u8, 0u8, 0u8, 0u8];
+    read_buffer = vec![128u8, 0u8, 0u8, 0u8];
     let i: i32 = i32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, i32::MIN);
 
-    let mut read_buffer: Vec<u8> = vec![255u8, 255u8, 255u8, 255u8];
+    read_buffer = vec![255u8, 255u8, 255u8, 255u8];
     let i: i32 = i32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, -1i32);
 }
@@ -215,19 +222,19 @@ fn test_deserialize_i64() {
     let i: i64 = i64::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 0i64);
 
-    let mut read_buffer: Vec<u8> = vec![0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 1u8];
+    read_buffer = vec![0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 1u8];
     let i: i64 = i64::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 1i64);
 
-    let mut read_buffer: Vec<u8> = vec![127u8, 255u8, 255u8, 255u8, 255u8, 255u8, 255u8, 255u8];
+    read_buffer = vec![127u8, 255u8, 255u8, 255u8, 255u8, 255u8, 255u8, 255u8];
     let i: i64 = i64::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, i64::MAX);
 
-    let mut read_buffer: Vec<u8> = vec![128u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8];
+    read_buffer = vec![128u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8];
     let i: i64 = i64::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, i64::MIN);
 
-    let mut read_buffer: Vec<u8> = vec![255u8, 255u8, 255u8, 255u8, 255u8, 255u8, 255u8, 255u8];
+    read_buffer = vec![255u8, 255u8, 255u8, 255u8, 255u8, 255u8, 255u8, 255u8];
     let i: i64 = i64::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, -1i64);
 }
@@ -255,11 +262,11 @@ fn test_deserialize_u32() {
     let i: u32 = u32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 0u32);
 
-    let mut read_buffer: Vec<u8> = vec![0u8, 0u8, 0u8, 1u8];
+    read_buffer = vec![0u8, 0u8, 0u8, 1u8];
     let i: u32 = u32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, 1u32);
 
-    let mut read_buffer: Vec<u8> = vec![255u8, 255u8, 255u8, 255u8];
+    read_buffer = vec![255u8, 255u8, 255u8, 255u8];
     let i: u32 = u32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(i, u32::MAX);
 }
@@ -291,11 +298,11 @@ fn test_deserialize_var_i32() {
     let zero: VarI32 = VarI32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(zero, VarI32(0));
 
-    let mut read_buffer: Vec<u8> = vec![1u8];
+    read_buffer = vec![1u8];
     let negative_one: VarI32 = VarI32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(negative_one, VarI32(-1));
 
-    let mut read_buffer: Vec<u8> = vec![2u8];
+    read_buffer = vec![2u8];
     let one: VarI32 = VarI32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(one, VarI32(1));
 }
@@ -327,11 +334,11 @@ fn test_deserialize_var_i64() {
     let zero: VarI64 = VarI64::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(zero, VarI64(0));
 
-    let mut read_buffer: Vec<u8> = vec![1u8];
+    read_buffer = vec![1u8];
     let negative_one: VarI64 = VarI64::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(negative_one, VarI64(-1));
 
-    let mut read_buffer: Vec<u8> = vec![2u8];
+    read_buffer = vec![2u8];
     let one: VarI64 = VarI64::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(one, VarI64(1));
 }
@@ -347,7 +354,7 @@ fn test_serialize_uuid() {
 
 #[test]
 fn test_deserialize_uuid() {
-    let mut read_buffer: Vec<u8> = vec![122, 157, 219, 3, 130, 28, 76, 125, 161, 188, 141, 178, 192, 18, 14, 133];
+    let read_buffer: Vec<u8> = vec![122, 157, 219, 3, 130, 28, 76, 125, 161, 188, 141, 178, 192, 18, 14, 133];
     let uuid: Uuid = Uuid::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(uuid, Uuid::from_str("7a9ddb03821c4c7da1bc8db2c0120e85").unwrap());
 }
@@ -376,7 +383,7 @@ fn test_deserialize_string() {
     let s: String = String::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(s, String::from("lol"));
 
-    let mut read_buffer: Vec<u8> = vec![0, 0];
+    read_buffer = vec![0, 0];
     let s: String = String::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(s, String::from(""));
 }
@@ -407,11 +414,11 @@ fn test_deserialize_var_u32() {
     let zero: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(zero, UnsignedVarInt32(0));
 
-    let mut read_buffer: Vec<u8> = vec![1u8];
+    read_buffer = vec![1u8];
     let negative_one: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(negative_one, UnsignedVarInt32(1));
 
-    let mut read_buffer: Vec<u8> = vec![2u8];
+    read_buffer = vec![2u8];
     let one: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(one, UnsignedVarInt32(2));
 }
@@ -437,7 +444,7 @@ fn test_deserialize_compact_string() {
     let compact_string: CompactString = CompactString::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(compact_string, CompactString(String::from("lol")));
 
-    let mut read_buffer: Vec<u8> = vec![1];
+    read_buffer = vec![1];
     let compact_string: CompactString = CompactString::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(compact_string, CompactString(String::from("")));
 }
@@ -468,11 +475,11 @@ fn test_deserialize_nullable_string() {
     let nullable_string: NullableString = NullableString::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(nullable_string, NullableString(Some(String::from("lol"))));
 
-    let mut read_buffer: Vec<u8> = vec![0, 0];
+    read_buffer = vec![0, 0];
     let nullable_string: NullableString = NullableString::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(nullable_string, NullableString(Some(String::from(""))));
 
-    let mut read_buffer: Vec<u8> = vec![255, 255];
+    read_buffer = vec![255, 255];
     let nullable_string: NullableString = NullableString::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(nullable_string, NullableString(None));
 }
@@ -503,11 +510,11 @@ fn test_deserialize_compact_nullable_string() {
     let nullable_string: CompactNullableString = CompactNullableString::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(nullable_string, CompactNullableString(Some(String::from("lol"))));
 
-    let mut read_buffer: Vec<u8> = vec![1];
+    read_buffer = vec![1];
     let nullable_string: CompactNullableString = CompactNullableString::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(nullable_string, CompactNullableString(Some(String::from(""))));
 
-    let mut read_buffer: Vec<u8> = vec![0];
+    read_buffer = vec![0];
     let nullable_string: CompactNullableString = CompactNullableString::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(nullable_string, CompactNullableString(None));
 }
@@ -533,7 +540,7 @@ fn test_deserialize_bytes() {
     let deserialized_bytes: Vec<u8> = Vec::<u8>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, vec![9, 8, 7, 6, 5]);
 
-    let mut read_buffer: Vec<u8> = vec![0, 0, 0, 0];
+    read_buffer = vec![0, 0, 0, 0];
     let deserialized_bytes: Vec<u8> = Vec::<u8>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, vec![]);
 }
@@ -559,7 +566,7 @@ fn test_deserialize_compact_bytes() {
     let deserialized_bytes: CompactBytes = CompactBytes::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, CompactBytes(vec![9, 8, 7, 6, 5]));
 
-    let mut read_buffer: Vec<u8> = vec![1];
+    read_buffer = vec![1];
     let deserialized_bytes: CompactBytes = CompactBytes::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, CompactBytes(vec![]));
 }
@@ -591,11 +598,11 @@ fn test_deserialize_nullable_bytes() {
     let deserialized_bytes: NullableBytes = NullableBytes::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, NullableBytes(Some(vec![9, 8, 7, 6, 5])));
 
-    let mut read_buffer: Vec<u8> = vec![0, 0, 0, 0];
+    read_buffer = vec![0, 0, 0, 0];
     let deserialized_bytes: NullableBytes = NullableBytes::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, NullableBytes(Some(vec![])));
 
-    let mut read_buffer: Vec<u8> = vec![255, 255, 255, 255];
+    read_buffer = vec![255, 255, 255, 255];
     let deserialized_bytes: NullableBytes = NullableBytes::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, NullableBytes(None));
 }
@@ -626,11 +633,11 @@ fn test_deserialize_compact_nullable_bytes() {
     let deserialized_bytes: CompactNullableBytes = CompactNullableBytes::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, CompactNullableBytes(Some(vec![9, 8, 7, 6, 5])));
 
-    let mut read_buffer: Vec<u8> = vec![1];
+    read_buffer = vec![1];
     let deserialized_bytes: CompactNullableBytes = CompactNullableBytes::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, CompactNullableBytes(Some(vec![])));
 
-    let mut read_buffer: Vec<u8> = vec![0];
+    read_buffer = vec![0];
     let deserialized_bytes: CompactNullableBytes = CompactNullableBytes::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(deserialized_bytes, CompactNullableBytes(None));
 }
@@ -658,7 +665,7 @@ fn test_deserialize_array() {
     let array: Array<VarI32> = Array::<VarI32>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(array, Array::<VarI32>::new(vec![VarI32(1), VarI32(42)]));
 
-    let mut read_buffer: Vec<u8> = vec![0, 0, 0, 0];
+    read_buffer = vec![0, 0, 0, 0];
     let array: Array<VarI32> = Array::<VarI32>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(array, Array::<VarI32>::new(Vec::new()));
 }
@@ -686,7 +693,7 @@ fn test_deserialize_nullable_array() {
     let nullable_array: NullableArray<VarI32> = NullableArray::<VarI32>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(nullable_array, NullableArray::<VarI32>::new(Some(vec![VarI32(1), VarI32(42)])));
 
-    let mut read_buffer: Vec<u8> = vec![255, 255, 255, 255];
+    read_buffer = vec![255, 255, 255, 255];
     let nullable_array: NullableArray<VarI32> = NullableArray::<VarI32>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(nullable_array, NullableArray::<VarI32>::new(None));
 }
@@ -714,7 +721,7 @@ fn test_deserialize_compact_array() {
     let compact_array: CompactArray<VarI32> = CompactArray::<VarI32>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(compact_array, CompactArray::<VarI32>::new(vec![VarI32(1), VarI32(42)]));
 
-    let mut read_buffer: Vec<u8> = vec![1];
+    read_buffer = vec![1];
     let compact_array: CompactArray<VarI32> = CompactArray::<VarI32>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(compact_array, CompactArray::<VarI32>::new(Vec::new()));
 }
@@ -742,7 +749,7 @@ fn test_deserialize_compact_nullable_array() {
     let compact_nullable_array: CompactNullableArray<VarI32> = CompactNullableArray::<VarI32>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(compact_nullable_array, CompactNullableArray::<VarI32>::new(Some(vec![VarI32(1), VarI32(42)])));
 
-    let mut read_buffer: Vec<u8> = vec![0];
+    read_buffer = vec![0];
     let compact_nullable_array: CompactNullableArray<VarI32> = CompactNullableArray::<VarI32>::from_kafka_bytes(&mut &*read_buffer).unwrap();
     assert_eq!(compact_nullable_array, CompactNullableArray::<VarI32>::new(None));
 }

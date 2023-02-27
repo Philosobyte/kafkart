@@ -19,7 +19,8 @@ fn test_derive_kafka_encodable() {
 
     let expected_output: proc_macro2::TokenStream = quote::quote! {
         impl KafkaEncodable for StructWithNamedFields {
-            fn to_kafka_bytes<W: std::io::Write>(self, writer: &mut W) -> std::io::Result<()> {
+            #[tracing::instrument]
+            fn to_kafka_bytes<W: std::io::Write>(self, writer: &mut W) -> anyhow::Result<()> {
                 self.string.to_kafka_bytes(writer)?;
                 self.integer.to_kafka_bytes(writer)?;
                 self.byte_vec.to_kafka_bytes(writer)?;
@@ -49,7 +50,8 @@ fn test_derive_kafka_decodable() {
 
     let expected_output: proc_macro2::TokenStream = quote::quote! {
         impl KafkaDecodable for StructWithNamedFields {
-            fn from_kafka_bytes<R: std::io::Read>(reader: &mut R) -> std::io::Result<StructWithNamedFields> {
+            #[tracing::instrument]
+            fn from_kafka_bytes<R: std::io::Read>(reader: &mut R) -> anyhow::Result<StructWithNamedFields> {
                 let s: StructWithNamedFields = StructWithNamedFields {
                     string: String::from_kafka_bytes(reader)?,
                     integer: i32::from_kafka_bytes(reader)?,

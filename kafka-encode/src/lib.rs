@@ -1,11 +1,11 @@
-mod err;
 pub mod primitives;
 #[cfg(test)]
 mod tests;
 mod implementation;
 
-use std::io::{Read, Result, Seek, Write};
-use bytes::{Bytes, BytesMut};
+use anyhow::Result;
+use std::fmt::Debug;
+use std::io::{Read, Write};
 
 // traits
 /// Any type which implements this trait can be serialized in a way which follows Kafka's [networking protocol](https://kafka.apache.org/protocol.html).
@@ -26,7 +26,7 @@ use bytes::{Bytes, BytesMut};
 /// 0i32.to_kafka_bytes(&mut buffer).unwrap();
 /// ```
 pub trait KafkaEncodable {
-    fn to_kafka_bytes<W: Write>(self, writer: &mut W) -> Result<()>;
+    fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()>;
 }
 
 /// Any type which implements this trait can be deserialized from a format which follows Kafka's [networking protocol](https://kafka.apache.org/protocol.html).
@@ -51,5 +51,5 @@ pub trait KafkaEncodable {
 /// let i: i32 = i32::from_kafka_bytes(&mut buffer).unwrap();
 /// ```
 pub trait KafkaDecodable where Self: Sized {
-    fn from_kafka_bytes<R: Read>(reader: &mut R) -> Result<Self>;
+    fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<Self>;
 }

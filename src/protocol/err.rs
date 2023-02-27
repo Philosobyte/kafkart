@@ -1,125 +1,235 @@
+use anyhow::{anyhow, Error, Result};
 use std::collections::HashMap;
-use std::io::{Error, ErrorKind, Read, Write};
+use std::io::{Read, Write};
 use bytes::{Bytes, BytesMut};
 use phf::phf_map;
 use kafka_encode::{KafkaDecodable, KafkaEncodable};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ErrorCode {
+    #[error("The server experienced an unexpected error when processing the request.")]
     UnknownServerError = -1,
     None = 0,
+    #[error("The requested offset is not within the range of offsets maintained by the server.")]
     OffsetOutOfRange = 1,
+    #[error("This message has failed its CRC checksum, exceeds the valid size, has a null key for a compacted topic, or is otherwise corrupt.")]
     CorruptMessage = 2,
+    #[error("This server does not host this topic-partition.")]
     UnknownTopicOrPartition = 3,
+    #[error("The requested fetch size is invalid.")]
     InvalidFetchSize = 4,
+    #[error("There is no leader for this topic-partition as we are in the middle of a leadership election.")]
     LeaderNotAvailable = 5,
+    #[error("For requests intended only for the leader, this error indicates that the broker is not the current leader. For requests intended for any replica, this error indicates that the broker is not a replica of the topic partition.")]
     NotLeaderOrFollower = 6,
+    #[error("The request timed out.")]
     RequestTimedOut = 7,
+    #[error("The broker is not available.")]
     BrokerNotAvailable = 8,
+    #[error("The replica is not available for the requested topic-partition. Produce/Fetch requests and other requests intended only for the leader or follower return NOT_LEADER_OR_FOLLOWER if the broker is not a replica of the topic-partition.")]
     ReplicaNotAvailable = 9,
+    #[error("The request included a message larger than the max message size the server will accept.")]
     MessageTooLarge = 10,
+    #[error("The controller moved to another broker.")]
     StaleControllerEpoch = 11,
+    #[error("The metadata field of the offset request was too large.")]
     OffsetMetadataTooLarge = 12,
+    #[error("The server disconnected before a response was received.")]
     NetworkException = 13,
+    #[error("The coordinator is loading and hence can't process requests.")]
     CoordinatorLoadInProgress = 14,
+    #[error("The coordinator is not available.")]
     CoordinatorNotAvailable = 15,
+    #[error("This is not the correct coordinator.")]
     NotCoordinator = 16,
+    #[error("The request attempted to perform an operation on an invalid topic.")]
     InvalidTopicException = 17,
+    #[error("The request included message batch larger than the configured segment size on the server.")]
     RecordListTooLarge = 18,
+    #[error("Messages are rejected since there are fewer in-sync replicas than required.")]
     NotEnoughReplicas = 19,
+    #[error("Messages are written to the log, but to fewer in-sync replicas than required.")]
     NotEnoughReplicasAfterAppend = 20,
+    #[error("Produce request specified an invalid value for required acks.")]
     InvalidRequiredAcks = 21,
+    #[error("Specified group generation id is not valid.")]
     IllegalGeneration = 22,
+    #[error("The group member's supported protocols are incompatible with those of existing members or first group member tried to join with empty protocol type or empty protocol list.")]
     InconsistentGroupProtocol = 23,
+    #[error("The configured groupId is invalid.")]
     InvalidGroupId = 24,
+    #[error("The coordinator is not aware of this member.")]
     UnknownMemberId = 25,
+    #[error("The session timeout is not within the range allowed by the broker (as configured by group.min.session.timeout.ms and group.max.session.timeout.ms).")]
     InvalidSessionTimeout = 26,
+    #[error("The group is rebalancing, so a rejoin is needed.")]
     RebalanceInProgress = 27,
+    #[error("The committing offset data size is not valid.")]
     InvalidCommitOffsetSize = 28,
+    #[error("Topic authorization failed.")]
     TopicAuthorizationFailed = 29,
+    #[error("Group authorization failed.")]
     GroupAuthorizationFailed = 30,
+    #[error("Cluster authorization failed.")]
     ClusterAuthorizationFailed = 31,
+    #[error("The timestamp of the message is out of acceptable range.")]
     InvalidTimestamp = 32,
+    #[error("The broker does not support the requested SASL mechanism.")]
     UnsupportedSaslMechanism = 33,
+    #[error("Request is not valid given the current SASL state.")]
     IllegalSaslState = 34,
+    #[error("The version of API is not supported.")]
     UnsupportedVersion = 35,
+    #[error("Topic with this name already exists.")]
     TopicAlreadyExists = 36,
+    #[error("Number of partitions is below 1.")]
     InvalidPartitions = 37,
+    #[error("Replication factor is below 1 or larger than the number of available brokers.")]
     InvalidReplicationFactor = 38,
+    #[error("Replica assignment is invalid.")]
     InvalidReplicaAssignment = 39,
+    #[error("Configuration is invalid.")]
     InvalidConfig = 40,
+    #[error("This is not the correct controller for this cluster.")]
     NotController = 41,
+    #[error("This most likely occurs because of a request being malformed by the client library or the message was sent to an incompatible broker. See the broker logs for more details.")]
     InvalidRequest = 42,
+    #[error("The message format version on the broker does not support the request.")]
     UnsupportedForMessageFormat = 43,
+    #[error("Request parameters do not satisfy the configured policy.")]
     PolicyViolation = 44,
+    #[error("The broker received an out of order sequence number.")]
     OutOfOrderSequenceNumber = 45,
+    #[error("The broker received a duplicate sequence number.")]
     DuplicateSequenceNumber = 46,
+    #[error("Producer attempted to produce with an old epoch.")]
     InvalidProducerEpoch = 47,
+    #[error("The producer attempted a transactional operation in an invalid state.")]
     InvalidTxnState = 48,
+    #[error("The producer attempted to use a producer id which is not currently assigned to its transactional id.")]
     InvalidProducerIdMapping = 49,
+    #[error("The transaction timeout is larger than the maximum value allowed by the broker (as configured by transaction.max.timeout.ms).")]
     InvalidTransactionTimeout = 50,
+    #[error("The producer attempted to update a transaction while another concurrent operation on the same transaction was ongoing.")]
     ConcurrentTransactions = 51,
+    #[error("Indicates that the transaction coordinator sending a WriteTxnMarker is no longer the current coordinator for a given producer.")]
     TransactionCoordinatorFenced = 52,
+    #[error("Transactional Id authorization failed.")]
     TransactionalIdAuthorizationFailed = 53,
+    #[error("Security features are disabled.")]
     SecurityDisabled = 54,
+    #[error("The broker did not attempt to execute this operation. This may happen for batched RPCs where some operations in the batch failed, causing the broker to respond without trying the rest.")]
     OperationNotAttempted = 55,
+    #[error("Disk error when trying to access log file on the disk.")]
     KafkaStorageError = 56,
+    #[error("The user-specified log directory is not found in the broker config.")]
     LogDirNotFound = 57,
+    #[error("SASL Authentication failed.")]
     SaslAuthenticationFailed = 58,
+    #[error("This exception is raised by the broker if it could not locate the producer metadata associated with the producerId in question. This could happen if, for instance, the producer's records were deleted because their retention time had elapsed. Once the last records of the producerId are removed, the producer's metadata is removed from the broker, and future appends by the producer will return this exception.")]
     UnknownProducerId = 59,
+    #[error("A partition reassignment is in progress.")]
     ReassignmentInProgress = 60,
+    #[error("Delegation Token feature is not enabled.")]
     DelegationTokenAuthDisabled = 61,
+    #[error("Delegation Token is not found on server.")]
     DelegationTokenNotFound = 62,
+    #[error("Specified Principal is not valid Owner/Renewer.")]
     DelegationTokenOwnerMismatch = 63,
+    #[error("Delegation Token requests are not allowed on PLAINTEXT/1-way SSL channels and on delegation token authenticated channels.")]
     DelegationTokenRequestNotAllowed = 64,
+    #[error("Delegation Token authorization failed.")]
     DelegationTokenAuthorizationFailed = 65,
+    #[error("Delegation Token is expired.")]
     DelegationTokenExpired = 66,
+    #[error("Supplied principalType is not supported.")]
     InvalidPrincipalType = 67,
+    #[error("The group is not empty.")]
     NonEmptyGroup = 68,
+    #[error("The group id does not exist.")]
     GroupIdNotFound = 69,
+    #[error("The fetch session ID was not found.")]
     FetchSessionIdNotFound = 70,
+    #[error("The fetch session epoch is invalid.")]
     InvalidFetchSessionEpoch = 71,
+    #[error("There is no listener on the leader broker that matches the listener on which metadata request was processed.")]
     ListenerNotFound = 72,
+    #[error("Topic deletion is disabled.")]
     TopicDeletionDisabled = 73,
+    #[error("The leader epoch in the request is older than the epoch on the broker.")]
     FencedLeaderEpoch = 74,
+    #[error("The leader epoch in the request is newer than the epoch on the broker.")]
     UnknownLeaderEpoch = 75,
+    #[error("The requesting client does not support the compression type of given partition.")]
     UnsupportedCompressionType = 76,
+    #[error("Broker epoch has changed.")]
     StaleBrokerEpoch = 77,
+    #[error("The leader high watermark has not caught up from a recent leader election so the offsets cannot be guaranteed to be monotonically increasing.")]
     OffsetNotAvailable = 78,
+    #[error("The group member needs to have a valid member id before actually entering a consumer group.")]
     MemberIdRequired = 79,
+    #[error("The preferred leader was not available.")]
     PreferredLeaderNotAvailable = 80,
+    #[error("The consumer group has reached its max size.")]
     GroupMaxSizeReached = 81,
+    #[error("The broker rejected this static consumer since another consumer with the same group.instance.id has registered with a different member.id.")]
     FencedInstanceId = 82,
+    #[error("Eligible topic partition leaders are not available.")]
     EligibleLeadersNotAvailable = 83,
+    #[error("Leader election not needed for topic partition.")]
     ElectionNotNeeded = 84,
+    #[error("No partition reassignment is in progress.")]
     NoReassignmentInProgress = 85,
+    #[error("Deleting offsets of a topic is forbidden while the consumer group is actively subscribed to it.")]
     GroupSubscribedToTopic = 86,
+    #[error("This record has failed the validation on broker and hence will be rejected.")]
     InvalidRecord = 87,
+    #[error("There are unstable offsets that need to be cleared.")]
     UnstableOffsetCommit = 88,
+    #[error("The throttling quota has been exceeded.")]
     ThrottlingQuotaExceeded = 89,
+    #[error("There is a newer producer with the same transactionalId which fences the current one.")]
     ProducerFenced = 90,
+    #[error("A request illegally referred to a resource that does not exist.")]
     ResourceNotFound = 91,
+    #[error("A request illegally referred to the same resource twice.")]
     DuplicateResource = 92,
+    #[error("Requested credential would not meet criteria for acceptability.")]
     UnacceptableCredential = 93,
+    #[error("Indicates that the either the sender or recipient of a voter-only request is not one of the expected voters")]
     InconsistentVoterSet = 94,
+    #[error("The given update version was invalid.")]
     InvalidUpdateVersion = 95,
+    #[error("Unable to update finalized features due to an unexpected server error.")]
     FeatureUpdateFailed = 96,
+    #[error("Request principal deserialization failed during forwarding. This indicates an internal error on the broker cluster security setup.")]
     PrincipalDeserializationFailure = 97,
+    #[error("Requested snapshot was not found")]
     SnapshotNotFound = 98,
+    #[error("Requested position is not greater than or equal to zero, and less than the size of the snapshot.")]
     PositionOutOfRange = 99,
+    #[error("This server does not host this topic ID.")]
     UnknownTopicId = 100,
+    #[error("This broker ID is already in use.")]
     DuplicateBrokerRegistration = 101,
+    #[error("The given broker ID was not registered.")]
     BrokerIdNotRegistered = 102,
+    #[error("The log's topic ID did not match the topic ID in the request")]
     InconsistentTopicId = 103,
+    #[error("The clusterId in the request does not match that found on the server")]
     InconsistentClusterId = 104,
+    #[error("The transactionalId could not be found")]
     TransactionalIdNotFound = 105,
+    #[error("The fetch session encountered inconsistent topic ID usage")]
     FetchSessionTopicIdError = 106,
+    #[error("The new ISR contains at least one ineligible replica.")]
     IneligibleReplica = 107,
+    #[error("The AlterPartition request successfully updated the partition state but the leader has changed.")]
     NewLeaderElected = 108,
 }
 
 impl TryFrom<i16> for ErrorCode {
-    type Error = std::io::Error;
+    type Error = anyhow::Error;
 
     fn try_from(value: i16) -> Result<Self, Self::Error> {
         match value {
@@ -233,19 +343,19 @@ impl TryFrom<i16> for ErrorCode {
             i if i == ErrorCode::FetchSessionTopicIdError as i16 => Ok(ErrorCode::FetchSessionTopicIdError),
             i if i == ErrorCode::IneligibleReplica as i16 => Ok(ErrorCode::IneligibleReplica),
             i if i == ErrorCode::NewLeaderElected as i16 => Ok(ErrorCode::NewLeaderElected),
-            _ => Err(std::io::Error::from(ErrorKind::InvalidData))
+            _ => Err(anyhow!(""))
         }
     }
 }
 
 impl KafkaEncodable for ErrorCode {
-    fn to_kafka_bytes<W: Write>(self, write_buffer: &mut W) -> std::io::Result<()> {
+    fn to_kafka_bytes<W: Write>(self, write_buffer: &mut W) -> Result<()> {
         (self as i16).to_kafka_bytes(write_buffer)
     }
 }
 
 impl KafkaDecodable for ErrorCode {
-    fn from_kafka_bytes<R: Read>(read_buffer: &mut R) -> std::io::Result<Self> {
+    fn from_kafka_bytes<R: Read>(read_buffer: &mut R) -> Result<Self> {
         let code: i16 = i16::from_kafka_bytes(read_buffer)?;
         ErrorCode::try_from(code)
     }
