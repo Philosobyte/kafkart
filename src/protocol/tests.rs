@@ -2,7 +2,6 @@ use bytes::{Bytes, BytesMut};
 use proc_macro2::{Ident, TokenStream};
 use syn::{Data, DeriveInput, Field, Fields, Item, PathArguments, PathSegment, Type};
 use std::io::{Read, Result};
-use log::info;
 use quote::{TokenStreamExt, ToTokens};
 use syn::__private::TokenStream2;
 use syn::punctuated::Iter;

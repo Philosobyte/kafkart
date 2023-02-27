@@ -42,7 +42,7 @@ fn generate_kafka_encodable_impl_for_struct(struct_name: &Ident, fields: Iter<Fi
     quote::quote! {
         impl KafkaEncodable for #struct_name {
             #[tracing::instrument]
-            fn to_kafka_bytes<W: std::io::Write>(self, writer: &mut W) -> anyhow::Result<()> {
+            fn to_kafka_bytes<W: std::io::Write + std::fmt::Debug>(self, writer: &mut W) -> anyhow::Result<()> {
                 #(
                     self.#field_names.to_kafka_bytes(writer)?;
                 )*
@@ -56,7 +56,7 @@ fn generate_kafka_decodable_impl_for_struct(struct_name: &Ident, struct_initiali
     quote::quote! {
         impl KafkaDecodable for #struct_name {
             #[tracing::instrument]
-            fn from_kafka_bytes<R: std::io::Read>(reader: &mut R) -> anyhow::Result<#struct_name> {
+            fn from_kafka_bytes<R: std::io::Read + std::fmt::Debug>(reader: &mut R) -> anyhow::Result<#struct_name> {
                 let s: #struct_name = #struct_name {
                     #(
                         #struct_initializer_lines

@@ -1,7 +1,7 @@
 use std::io::{Read, Write};
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use bytes::buf::Reader;
-use log::info;
+use tracing::info;
 use kafka_encode::primitives::{Array, CompactArray, CompactNullableArray, CompactNullableString, CompactString, NullableArray, NullableString, VarArray};
 use kafka_encode::{KafkaDecodable, KafkaEncodable};
 use kafka_encode_derive::{KafkaDecodable, KafkaEncodable};
@@ -65,7 +65,7 @@ pub struct ProduceRequestV9 {
     pub tag_buffer: TaggedFields
 }
 
-#[test_log::test]
+#[test]
 fn test_stuff() {
     info!("try this");
     let mut request_bytes: Reader<Bytes> = Bytes::from(vec![0, 0, 0, 46, 0, 18, 0, 3, 0, 0, 0, 0, 0, 10, 112, 114, 111, 100, 117, 99, 101, 114, 45, 49, 0, 18, 97, 112, 97, 99, 104, 101, 45, 107, 97, 102, 107, 97, 45, 106, 97, 118, 97, 6, 51, 46, 51, 46, 49, 0])
@@ -85,7 +85,7 @@ fn test_stuff() {
     println!("response: {:?}", response);
 }
 
-#[test_log::test]
+#[test]
 fn test_serialization_stuff() {
     let request_header: RequestHeaderV2 = RequestHeaderV2 {
         request_api_key: ApiKey::JoinGroup,

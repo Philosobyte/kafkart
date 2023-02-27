@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+use anyhow::{anyhow, Result};
 use std::io::{Error, ErrorKind, Read, Write};
 use bytes::{Bytes, BytesMut};
 use kafka_encode::{KafkaDecodable, KafkaEncodable};
@@ -67,7 +69,7 @@ pub enum ApiKey {
     AllocateProducerIds = 67,
 }
 impl TryFrom<i16> for ApiKey {
-    type Error = std::io::Error;
+    type Error = anyhow::Error;
     fn try_from(value: i16) -> Result<Self, Self::Error> {
         match value {
             i if i == ApiKey::Produce as i16 => Ok(ApiKey::Produce),
@@ -131,19 +133,19 @@ impl TryFrom<i16> for ApiKey {
             i if i == ApiKey::DescribeTransactions as i16 => Ok(ApiKey::DescribeTransactions),
             i if i == ApiKey::ListTransactions as i16 => Ok(ApiKey::ListTransactions),
             i if i == ApiKey::AllocateProducerIds as i16 => Ok(ApiKey::AllocateProducerIds),
-            _ => Err(std::io::Error::from(ErrorKind::InvalidData))
+            _ => Err(anyhow!("Unable to determine api key for value: {}", value))
         }
     }
 }
 
 impl KafkaEncodable for ApiKey {
-    fn to_kafka_bytes<W: Write>(self, write_buffer: &mut W) -> std::io::Result<()> {
+    fn to_kafka_bytes<W: Write + Debug>(self, write_buffer: &mut W) -> Result<()> {
         (self as i16).to_kafka_bytes(write_buffer)
     }
 }
 
 impl KafkaDecodable for ApiKey {
-    fn from_kafka_bytes<R: Read>(read_buffer: &mut R) -> std::io::Result<ApiKey> {
+    fn from_kafka_bytes<R: Read + Debug>(read_buffer: &mut R) -> Result<ApiKey> {
         let api_key: i16 = i16::from_kafka_bytes(read_buffer)?;
         ApiKey::try_from(api_key)
     }

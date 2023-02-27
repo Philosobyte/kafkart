@@ -1,14 +1,16 @@
 use anyhow::{anyhow, Error, Result};
+use thiserror::Error;
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::io::{Read, Write};
 use bytes::{Bytes, BytesMut};
-use phf::phf_map;
 use kafka_encode::{KafkaDecodable, KafkaEncodable};
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Error, Eq, PartialEq)]
 pub enum ErrorCode {
     #[error("The server experienced an unexpected error when processing the request.")]
     UnknownServerError = -1,
+    #[error("This is actually not an error and if this gets printed, mistakes were made.")]
     None = 0,
     #[error("The requested offset is not within the range of offsets maintained by the server.")]
     OffsetOutOfRange = 1,
@@ -343,19 +345,19 @@ impl TryFrom<i16> for ErrorCode {
             i if i == ErrorCode::FetchSessionTopicIdError as i16 => Ok(ErrorCode::FetchSessionTopicIdError),
             i if i == ErrorCode::IneligibleReplica as i16 => Ok(ErrorCode::IneligibleReplica),
             i if i == ErrorCode::NewLeaderElected as i16 => Ok(ErrorCode::NewLeaderElected),
-            _ => Err(anyhow!(""))
+            _ => Err(anyhow!("Unable to determine error code for value {}", value))
         }
     }
 }
 
 impl KafkaEncodable for ErrorCode {
-    fn to_kafka_bytes<W: Write>(self, write_buffer: &mut W) -> Result<()> {
+    fn to_kafka_bytes<W: Write + Debug>(self, write_buffer: &mut W) -> Result<()> {
         (self as i16).to_kafka_bytes(write_buffer)
     }
 }
 
 impl KafkaDecodable for ErrorCode {
-    fn from_kafka_bytes<R: Read>(read_buffer: &mut R) -> Result<Self> {
+    fn from_kafka_bytes<R: Read + Debug>(read_buffer: &mut R) -> Result<Self> {
         let code: i16 = i16::from_kafka_bytes(read_buffer)?;
         ErrorCode::try_from(code)
     }

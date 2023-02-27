@@ -7,7 +7,7 @@ use bytes::{BufMut, Bytes, BytesMut};
 use crate::protocol::err::ErrorCode;
 use kafka_encode_derive::{KafkaDecodable, KafkaEncodable};
 use kafka_encode::{KafkaEncodable, KafkaDecodable};
-use kafka_encode::primitives::{NullableArray, CompactNullableArray, CompactBytes, CompactNullableString, CompactString, NullableString, UnsignedVarInt32, VarI32, VarI64, Array, CompactArray, CompactNullableBytes, VarArray};
+use kafka_encode::primitives::*;
 use crate::protocol::api_key::ApiKey;
 
 mod err;
