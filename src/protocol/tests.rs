@@ -6,8 +6,8 @@ use quote::{TokenStreamExt, ToTokens};
 use syn::__private::TokenStream2;
 use syn::punctuated::Iter;
 use syn::token::Colon2;
-use kafka_encode_derive::{KafkaDecodable, KafkaEncodable};
-use kafka_encode::{KafkaEncodable, KafkaDecodable};
+use kafka_encode_derive::KafkaEncodable;
+use kafka_encode::KafkaEncodable;
 use crate::protocol::api_versions::{ApiVersionsRequestV3, ApiVersionsResponseV3};
 use crate::protocol::headers::RequestHeaderV2;
 

@@ -7,7 +7,7 @@ use bytes::buf::Reader;
 use tracing::{debug, info, instrument, Level, trace};
 use tracing_subscriber::fmt::format;
 use tracing_subscriber::fmt::format::FmtSpan;
-use kafka_encode::{KafkaDecodable, KafkaEncodable};
+use kafka_encode::KafkaEncodable;
 use kafka_encode::primitives::{CompactString, NullableString, VarArray};
 use anyhow::{anyhow, Result};
 use rand::RngCore;

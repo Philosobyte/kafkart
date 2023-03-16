@@ -3,42 +3,42 @@ use bytes::{Buf, BufMut, Bytes, BytesMut};
 use bytes::buf::Reader;
 use tracing::info;
 use kafka_encode::primitives::{Array, CompactArray, CompactNullableArray, CompactNullableString, CompactString, NullableArray, NullableString, VarArray};
-use kafka_encode::{KafkaDecodable, KafkaEncodable};
-use kafka_encode_derive::{KafkaDecodable, KafkaEncodable};
+use kafka_encode::KafkaEncodable;
+use kafka_encode_derive::KafkaEncodable;
 use crate::protocol::api_key::ApiKey;
 use crate::protocol::api_versions::{ApiVersionsRequestV3, ApiVersionsResponseV3};
 use crate::protocol::headers::{RequestHeaderV2, ResponseHeaderV1};
 use crate::protocol::records::Record;
 use crate::protocol::tags::TaggedFields;
 
-#[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
+#[derive(Debug, KafkaEncodable, Eq, PartialEq, Clone)]
 pub struct PartitionDataV0V8 {
     pub index: i32,
     records: NullableArray<Record>
 }
 
-#[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
+#[derive(Debug, KafkaEncodable, Eq, PartialEq, Clone)]
 pub struct PartitionDataV9 {
     pub index: i32,
     pub records: CompactNullableArray<Record>,
     pub tag_buffer: TaggedFields
 }
 
-#[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
+#[derive(Debug, KafkaEncodable, Eq, PartialEq, Clone)]
 pub struct TopicDataV0V8 {
     pub name: String,
     partition_data: Array<PartitionDataV0V8>
 }
 
 
-#[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
+#[derive(Debug, KafkaEncodable, Eq, PartialEq, Clone)]
 pub struct TopicDataV9 {
     pub name: CompactString,
     pub partition_data: CompactArray<PartitionDataV9>,
     pub tag_buffer: TaggedFields
 }
 
-#[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
+#[derive(Debug, KafkaEncodable, Eq, PartialEq, Clone)]
 pub struct ProduceRequestV0V2 {
     pub acks: i16,
     pub timeout_ms: i32,
@@ -48,7 +48,7 @@ pub struct ProduceRequestV0V2 {
 pub type ProduceRequestV1 = ProduceRequestV0V2;
 pub type ProduceRequestV2 = ProduceRequestV0V2;
 
-#[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
+#[derive(Debug, KafkaEncodable, Eq, PartialEq, Clone)]
 pub struct ProduceRequestV3V8 {
     pub transactional_id: NullableString,
     pub acks: i16,
@@ -56,7 +56,7 @@ pub struct ProduceRequestV3V8 {
     pub topic_data: Array<TopicDataV0V8>
 }
 
-#[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
+#[derive(Debug, KafkaEncodable, Eq, PartialEq, Clone)]
 pub struct ProduceRequestV9 {
     pub transactional_id: CompactNullableString,
     pub acks: i16,

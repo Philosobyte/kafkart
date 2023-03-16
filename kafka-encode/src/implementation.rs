@@ -4,7 +4,7 @@ use std::io::{Read, Write, ErrorKind, Error};
 use integer_encoding::{VarIntReader, VarIntWriter};
 use tracing::{instrument, trace};
 use uuid::Uuid;
-use crate::{KafkaDecodable, KafkaEncodable};
+use crate::KafkaEncodable;
 use crate::primitives::{NullableArray, CompactNullableArray, CompactBytes, CompactNullableBytes, CompactNullableString, CompactString, NullableBytes, NullableString, UnsignedVarInt32, VarI32, VarI64, Array, CompactArray, VarArray};
 
 // BOOLEAN
@@ -17,9 +17,7 @@ impl KafkaEncodable for bool {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for bool {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<bool> {
         let mut buf: [u8; 1] = [0; 1];
@@ -40,9 +38,7 @@ impl KafkaEncodable for u8 {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for u8 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<u8> {
         let mut buf: [u8; 1] = [0; 1];
@@ -63,9 +59,7 @@ impl KafkaEncodable for i8 {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for i8 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<i8> {
         let mut buf: [u8; 1] = [0; 1];
@@ -86,9 +80,7 @@ impl KafkaEncodable for i16 {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for i16 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<i16> {
         let mut buf: [u8; 2] = [0; 2];
@@ -109,9 +101,7 @@ impl KafkaEncodable for i32 {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for i32 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<i32> {
         let mut buf: [u8; 4] = [0; 4];
@@ -132,9 +122,7 @@ impl KafkaEncodable for i64 {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for i64 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<i64> {
         let mut buf: [u8; 8] = [0; 8];
@@ -155,9 +143,7 @@ impl KafkaEncodable for u32 {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for u32 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<u32> {
         let mut buf: [u8; 4] = [0; 4];
@@ -179,9 +165,7 @@ impl KafkaEncodable for VarI32 {
         writer.write_all(&*bytes_vec);
         Ok(())
     }
-}
 
-impl KafkaDecodable for VarI32 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<VarI32> {
         let var_i32: i32 = reader.read_varint()?;
@@ -202,9 +186,7 @@ impl KafkaEncodable for VarI64 {
         writer.write_all(&*bytes_vec);
         Ok(())
     }
-}
 
-impl KafkaDecodable for VarI64 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<VarI64> {
         let var_i64: i64 = reader.read_varint()?;
@@ -224,9 +206,7 @@ impl KafkaEncodable for Uuid {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for Uuid {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<Uuid> {
         let mut buf: [u8; 16] = [0; 16];
@@ -247,9 +227,7 @@ impl KafkaEncodable for f64 {
         writer.write_all(bytes)?;
         Ok(())
     }
-}
 
-impl KafkaDecodable for f64 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<f64> {
         let mut buf: [u8; 8] = [0; 8];
@@ -316,9 +294,7 @@ impl KafkaEncodable for String {
         write_bytes_with_size_header!(writer, bytes, i16);
         Ok(())
     }
-}
 
-impl KafkaDecodable for String {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<String> {
         read_bytes_with_size_header!(
@@ -344,9 +320,7 @@ impl KafkaEncodable for UnsignedVarInt32 {
         writer.write_all(&*bytes);
         Ok(())
     }
-}
 
-impl KafkaDecodable for UnsignedVarInt32 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<UnsignedVarInt32> {
         let var_u32: u32 = reader.read_varint()?;
@@ -364,9 +338,7 @@ impl KafkaEncodable for CompactString {
         trace!("CompactString bytes: {:?}", bytes);
         write_bytes_with_unsigned_varint_size_header(writer, bytes)
     }
-}
 
-impl KafkaDecodable for CompactString {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<CompactString> {
         let bytes: Vec<u8> = read_bytes_with_unsigned_varint_size_header(reader)?;
@@ -394,9 +366,7 @@ impl KafkaEncodable for NullableString {
         write_bytes_with_size_header!(writer, bytes, i16);
         Ok(())
     }
-}
 
-impl KafkaDecodable for NullableString {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<NullableString> {
         let bytes_length: i16 = i16::from_kafka_bytes(reader)?;
@@ -426,9 +396,7 @@ impl KafkaEncodable for CompactNullableString {
         let bytes: &[u8] = self.as_mut().unwrap().as_bytes();
         write_bytes_with_unsigned_varint_size_header(writer, bytes)
     }
-}
 
-impl KafkaDecodable for CompactNullableString {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<CompactNullableString> {
         let bytes_length: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;
@@ -455,9 +423,7 @@ impl KafkaEncodable for Vec<u8> {
         write_bytes_with_size_header!(writer, &*self, i32);
         Ok(())
     }
-}
 
-impl KafkaDecodable for Vec<u8> {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<Vec<u8>> {
         read_bytes_with_size_header!(
@@ -478,9 +444,7 @@ impl KafkaEncodable for CompactBytes {
         trace!("CompactBytes bytes: {:?}", bytes);
         write_bytes_with_unsigned_varint_size_header(writer, bytes)
     }
-}
 
-impl KafkaDecodable for CompactBytes {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<CompactBytes> {
         let bytes: Vec<u8> = read_bytes_with_unsigned_varint_size_header(reader)?;
@@ -503,9 +467,7 @@ impl KafkaEncodable for NullableBytes {
         write_bytes_with_size_header!(writer, bytes, i32);
         Ok(())
     }
-}
 
-impl KafkaDecodable for NullableBytes {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<NullableBytes> {
         let bytes_length: i32 = i32::from_kafka_bytes(reader)?;
@@ -533,9 +495,7 @@ impl KafkaEncodable for CompactNullableBytes {
         trace!("CompactNullableBytes bytes: {:?}", bytes);
         write_bytes_with_unsigned_varint_size_header(writer, bytes)
     }
-}
 
-impl KafkaDecodable for CompactNullableBytes {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<CompactNullableBytes> {
         let bytes_length: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;
@@ -553,7 +513,7 @@ impl KafkaDecodable for CompactNullableBytes {
 }
 
 // ARRAY
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for Array<T> {
+impl<T: KafkaEncodable + Debug> KafkaEncodable for Array<T> {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
         let elements: Vec<T> = self.0;
@@ -574,9 +534,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for Array<T> {
         }
         Ok(())
     }
-}
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for Array<T> {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<Array<T>> {
         let num_elements: i32 = i32::from_kafka_bytes(reader)?;
@@ -593,7 +551,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for Array<T> {
 }
 
 // NULLABLE_ARRAY
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for NullableArray<T> {
+impl<T: KafkaEncodable + Debug> KafkaEncodable for NullableArray<T> {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
         if self.is_none() {
@@ -617,9 +575,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for NullableArra
         }
         Ok(())
     }
-}
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for NullableArray<T> {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<NullableArray<T>> {
         let num_elements: i32 = i32::from_kafka_bytes(reader)?;
@@ -640,7 +596,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for NullableArra
 }
 
 // COMPACT_ARRAY
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for CompactArray<T> {
+impl<T: KafkaEncodable + Debug> KafkaEncodable for CompactArray<T> {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
         let elements: Vec<T> = self.0;
@@ -661,9 +617,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for CompactArray
         }
         Ok(())
     }
-}
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for CompactArray<T> {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<CompactArray<T>> {
         let num_elements_plus_one: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;
@@ -682,7 +636,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for CompactArray
 }
 
 // VARARRAY
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for VarArray<T> {
+impl<T: KafkaEncodable + Debug> KafkaEncodable for VarArray<T> {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
         let elements: Vec<T> = self.0;
@@ -703,9 +657,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for VarArray<T> 
         }
         Ok(())
     }
-}
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for VarArray<T> {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<VarArray<T>> {
         let num_elements_varint: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;
@@ -723,7 +675,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for VarArray<T> 
 }
 
 // COMPACT_NULLABLE_ARRAY
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for CompactNullableArray<T> {
+impl<T: KafkaEncodable + Debug> KafkaEncodable for CompactNullableArray<T> {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
         if self.is_none() {
@@ -747,9 +699,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for CompactNulla
         }
         Ok(())
     }
-}
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for CompactNullableArray<T> {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<CompactNullableArray<T>> {
         let num_elements_varint: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;

@@ -2,7 +2,7 @@ use std::str::FromStr;
 use tracing::Level;
 use uuid::Uuid;
 use ctor::ctor;
-use crate::{KafkaDecodable, KafkaEncodable};
+use crate::KafkaEncodable;
 use crate::primitives::{NullableArray, CompactNullableArray, CompactBytes, CompactNullableBytes, CompactNullableString, CompactString, NullableBytes, NullableString, UnsignedVarInt32, VarI32, VarI64, Array, CompactArray};
 
 // TODO: figure out how to make the writer to stdout not deadlock with multiple tests

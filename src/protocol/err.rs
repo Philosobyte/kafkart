@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{Read, Write};
 use bytes::{Bytes, BytesMut};
-use kafka_encode::{KafkaDecodable, KafkaEncodable};
+use kafka_encode::KafkaEncodable;
 
 #[derive(Debug, Clone, Error, Eq, PartialEq)]
 pub enum ErrorCode {
@@ -354,9 +354,7 @@ impl KafkaEncodable for ErrorCode {
     fn to_kafka_bytes<W: Write + Debug>(self, write_buffer: &mut W) -> Result<()> {
         (self as i16).to_kafka_bytes(write_buffer)
     }
-}
 
-impl KafkaDecodable for ErrorCode {
     fn from_kafka_bytes<R: Read + Debug>(read_buffer: &mut R) -> Result<Self> {
         let code: i16 = i16::from_kafka_bytes(read_buffer)?;
         ErrorCode::try_from(code)

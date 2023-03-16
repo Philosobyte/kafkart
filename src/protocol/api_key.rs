@@ -142,9 +142,7 @@ impl KafkaEncodable for ApiKey {
     fn to_kafka_bytes<W: Write + Debug>(self, write_buffer: &mut W) -> Result<()> {
         (self as i16).to_kafka_bytes(write_buffer)
     }
-}
 
-impl KafkaDecodable for ApiKey {
     fn from_kafka_bytes<R: Read + Debug>(read_buffer: &mut R) -> Result<ApiKey> {
         let api_key: i16 = i16::from_kafka_bytes(read_buffer)?;
         ApiKey::try_from(api_key)

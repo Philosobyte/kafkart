@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use std::io::{Read, Write};
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use bytes::buf::{Reader, Writer};
-use kafka_encode::{KafkaDecodable, KafkaEncodable};
+use kafka_encode::KafkaEncodable;
 use kafka_encode::primitives::{CompactString, NullableString, VarArray};
 use crate::protocol::api_key::ApiKey::ApiVersions;
 use crate::protocol::api_versions::ApiVersionsRequestV3;
@@ -11,12 +11,12 @@ use crate::protocol::headers::RequestHeaderV2;
 use crate::protocol::tags::TaggedFields;
 
 pub struct PairWithI32EncodedSize<T1, T2>(pub T1, pub T2) where
-    T1: KafkaEncodable + KafkaDecodable + Debug,
-    T2: KafkaEncodable + KafkaDecodable + Debug;
+    T1: KafkaEncodable + Debug,
+    T2: KafkaEncodable + Debug;
 
 impl<T1, T2> KafkaEncodable for PairWithI32EncodedSize<T1, T2> where
-    T1: KafkaEncodable + KafkaDecodable + Debug,
-    T2: KafkaEncodable + KafkaDecodable + Debug {
+    T1: KafkaEncodable + Debug,
+    T2: KafkaEncodable + Debug {
 
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
         let mut buffer_writer: Writer<BytesMut> = BytesMut::new().writer();
@@ -29,11 +29,6 @@ impl<T1, T2> KafkaEncodable for PairWithI32EncodedSize<T1, T2> where
         writer.write_all(buffer.as_ref())?;
         Ok(())
     }
-}
-
-impl<T1, T2> KafkaDecodable for PairWithI32EncodedSize<T1, T2> where
-    T1: KafkaEncodable + KafkaDecodable + Debug,
-    T2: KafkaEncodable + KafkaDecodable + Debug {
 
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<Self> {
         let size: i32 = i32::from_kafka_bytes(reader)?;

@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
-use crate::{KafkaDecodable, KafkaEncodable};
+use crate::KafkaEncodable;
 
 macro_rules! impl_deref_for_single_field_tuple_struct {
     ($struct_name:ident, $target_type:ty) => {
@@ -75,15 +75,15 @@ impl DerefMut for CompactNullableBytes {
 
 // ARRAY
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Array<T: KafkaEncodable + KafkaDecodable + Debug>(pub Vec<T>);
+pub struct Array<T: KafkaEncodable + Debug>(pub Vec<T>);
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> Array<T> {
+impl<T: KafkaEncodable + Debug> Array<T> {
     pub(crate) fn new(v: Vec<T>) -> Self {
         Array(v)
     }
 }
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for Array<T> {
+impl<T: KafkaEncodable + Debug> Deref for Array<T> {
     type Target = Vec<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -93,15 +93,15 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for Array<T> {
 
 // NULLABLE_ARRAY
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct NullableArray<T: KafkaEncodable + KafkaDecodable + Debug>(pub Option<Vec<T>>);
+pub struct NullableArray<T: KafkaEncodable + Debug>(pub Option<Vec<T>>);
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> NullableArray<T> {
+impl<T: KafkaEncodable + Debug> NullableArray<T> {
     pub(crate) fn new(v: Option<Vec<T>>) -> Self {
         NullableArray(v)
     }
 }
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for NullableArray<T> {
+impl<T: KafkaEncodable + Debug> Deref for NullableArray<T> {
     type Target = Option<Vec<T>>;
 
     fn deref(&self) -> &Self::Target {
@@ -111,15 +111,15 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for NullableArray<T> {
 
 // COMPACT_ARRAY
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct CompactArray<T: KafkaEncodable + KafkaDecodable + Debug>(pub Vec<T>);
+pub struct CompactArray<T: KafkaEncodable + Debug>(pub Vec<T>);
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> CompactArray<T> {
+impl<T: KafkaEncodable + Debug> CompactArray<T> {
     pub(crate) fn new(v: Vec<T>) -> Self {
         CompactArray(v)
     }
 }
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for CompactArray<T> {
+impl<T: KafkaEncodable + Debug> Deref for CompactArray<T> {
     type Target = Vec<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -129,15 +129,15 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for CompactArray<T> {
 
 // VARARRAY
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VarArray<T: KafkaEncodable + KafkaDecodable + Debug>(pub Vec<T>);
+pub struct VarArray<T: KafkaEncodable + Debug>(pub Vec<T>);
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> VarArray<T> {
+impl<T: KafkaEncodable + Debug> VarArray<T> {
     pub(crate) fn new(v: Vec<T>) -> Self {
         VarArray(v)
     }
 }
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for VarArray<T> {
+impl<T: KafkaEncodable + Debug> Deref for VarArray<T> {
     type Target = Vec<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -147,15 +147,15 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for VarArray<T> {
 
 // COMPACT_NULLABLE_ARRAY
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct CompactNullableArray<T: KafkaEncodable + KafkaDecodable + Debug>(pub Option<Vec<T>>);
+pub struct CompactNullableArray<T: KafkaEncodable + Debug>(pub Option<Vec<T>>);
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> CompactNullableArray<T> {
+impl<T: KafkaEncodable + Debug> CompactNullableArray<T> {
     pub(crate) fn new(v: Option<Vec<T>>) -> Self {
         CompactNullableArray(v)
     }
 }
 
-impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for CompactNullableArray<T> {
+impl<T: KafkaEncodable + Debug> Deref for CompactNullableArray<T> {
     type Target = Option<Vec<T>>;
 
     fn deref(&self) -> &Self::Target {

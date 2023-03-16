@@ -6,8 +6,8 @@ use std::iter::Iterator;
 use std::net::TcpStream;
 use bytes::{BufMut, Bytes, BytesMut};
 use crate::protocol::err::ErrorCode;
-use kafka_encode_derive::{KafkaDecodable, KafkaEncodable};
-use kafka_encode::{KafkaEncodable, KafkaDecodable};
+use kafka_encode_derive::KafkaEncodable;
+use kafka_encode::KafkaEncodable;
 use kafka_encode::primitives::*;
 use crate::protocol::api_key::ApiKey;
 
@@ -25,11 +25,11 @@ mod networking;
 
 pub type ApiVersion = i16;
 
-pub trait KafkaRequest: KafkaDecodable + KafkaEncodable + Debug {
+pub trait KafkaRequest: KafkaEncodable + Debug {
     fn get_api_key() -> ApiKey;
     fn get_version() -> ApiVersion;
     fn get_response_header_version() -> ApiVersion;
 }
 
-pub trait KafkaResponse: KafkaDecodable + KafkaEncodable + Debug {
+pub trait KafkaResponse: KafkaEncodable + Debug {
 }
