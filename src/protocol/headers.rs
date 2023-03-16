@@ -30,9 +30,19 @@ pub struct RequestHeaderV2 {
     pub tag_buffer: TaggedFields
 }
 
+pub trait ResponseHeader {
+    fn get_correlation_id(&self) -> i32;
+}
+
 #[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
 pub struct ResponseHeaderV0 {
     pub correlation_id: i32
+}
+
+impl ResponseHeader for ResponseHeaderV0 {
+    fn get_correlation_id(&self) -> i32 {
+        self.correlation_id
+    }
 }
 
 #[derive(Debug, KafkaEncodable, KafkaDecodable, Eq, PartialEq, Clone)]
@@ -40,6 +50,14 @@ pub struct ResponseHeaderV1 {
     pub correlation_id: i32,
     pub tag_buffer: TaggedFields
 }
+
+impl ResponseHeader for ResponseHeaderV1 {
+    fn get_correlation_id(&self) -> i32 {
+        self.correlation_id
+    }
+}
+
+
 
 #[test]
 fn test_request_header_v0() {

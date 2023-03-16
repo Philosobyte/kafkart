@@ -162,3 +162,6 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> Deref for CompactNullableArray<
         &self.0
     }
 }
+//
+// // for tagged fields
+// pub struct

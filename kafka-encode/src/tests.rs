@@ -5,12 +5,12 @@ use ctor::ctor;
 use crate::{KafkaDecodable, KafkaEncodable};
 use crate::primitives::{NullableArray, CompactNullableArray, CompactBytes, CompactNullableBytes, CompactNullableString, CompactString, NullableBytes, NullableString, UnsignedVarInt32, VarI32, VarI64, Array, CompactArray};
 
-#[ctor]
+// TODO: figure out how to make the writer to stdout not deadlock with multiple tests
+// #[ctor]
 fn print_spans_and_events_during_tests() {
     tracing_subscriber::fmt::fmt()
         .with_max_level(Level::TRACE)
-        // TODO: figure out how to make the writer to stdout not deadlock with multiple tests
-        // .with_span_events(FmtSpan::FULL)
+        // .with_span_events(Span::FULL)
         .init();
 }
 

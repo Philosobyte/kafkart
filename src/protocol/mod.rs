@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::intrinsics::write_bytes;
 use std::io::{Error, ErrorKind};
 use std::iter::Iterator;
@@ -20,5 +21,15 @@ mod tags;
 mod produce;
 mod api_versions;
 mod requests;
+mod networking;
 
 pub type ApiVersion = i16;
+
+pub trait KafkaRequest: KafkaDecodable + KafkaEncodable + Debug {
+    fn get_api_key() -> ApiKey;
+    fn get_version() -> ApiVersion;
+    fn get_response_header_version() -> ApiVersion;
+}
+
+pub trait KafkaResponse: KafkaDecodable + KafkaEncodable + Debug {
+}

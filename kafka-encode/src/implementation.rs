@@ -11,7 +11,10 @@ use crate::primitives::{NullableArray, CompactNullableArray, CompactBytes, Compa
 impl KafkaEncodable for bool {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(&[self as u8])?;
+        let bytes: &[u8] = &[self as u8];
+        trace!("bool bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -22,6 +25,7 @@ impl KafkaDecodable for bool {
         let mut buf: [u8; 1] = [0; 1];
         reader.read_exact(&mut buf)?;
 
+        trace!("bool bytes: {:?}", buf);
         Ok(buf[0] != 0u8)
     }
 }
@@ -30,7 +34,10 @@ impl KafkaDecodable for bool {
 impl KafkaEncodable for u8 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(&self.to_be_bytes())?;
+        let bytes: &[u8] = &self.to_be_bytes();
+        trace!("u8 bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -41,6 +48,7 @@ impl KafkaDecodable for u8 {
         let mut buf: [u8; 1] = [0; 1];
         reader.read_exact(&mut buf)?;
 
+        trace!("u8 bytes: {:?}", buf);
         Ok(buf[0])
     }
 }
@@ -49,7 +57,10 @@ impl KafkaDecodable for u8 {
 impl KafkaEncodable for i8 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(&self.to_be_bytes())?;
+        let bytes: &[u8] = &self.to_be_bytes();
+        trace!("i8 bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -60,6 +71,7 @@ impl KafkaDecodable for i8 {
         let mut buf: [u8; 1] = [0; 1];
         reader.read_exact(&mut buf)?;
 
+        trace!("i8 bytes: {:?}", buf);
         Ok(buf[0] as i8)
     }
 }
@@ -68,7 +80,10 @@ impl KafkaDecodable for i8 {
 impl KafkaEncodable for i16 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(&self.to_be_bytes())?;
+        let bytes: &[u8] = &self.to_be_bytes();
+        trace!("i16 bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -79,6 +94,7 @@ impl KafkaDecodable for i16 {
         let mut buf: [u8; 2] = [0; 2];
         reader.read_exact(&mut buf)?;
 
+        trace!("i16 bytes: {:?}", buf);
         Ok(i16::from_be_bytes(buf))
     }
 }
@@ -87,7 +103,10 @@ impl KafkaDecodable for i16 {
 impl KafkaEncodable for i32 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(&self.to_be_bytes())?;
+        let bytes: &[u8] = &self.to_be_bytes();
+        trace!("i32 bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -97,6 +116,8 @@ impl KafkaDecodable for i32 {
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<i32> {
         let mut buf: [u8; 4] = [0; 4];
         reader.read_exact(&mut buf)?;
+
+        trace!("i32 bytes: {:?}", buf);
         Ok(i32::from_be_bytes(buf))
     }
 }
@@ -105,7 +126,10 @@ impl KafkaDecodable for i32 {
 impl KafkaEncodable for i64 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(&self.to_be_bytes())?;
+        let bytes: &[u8] = &self.to_be_bytes();
+        trace!("i64 bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -116,6 +140,7 @@ impl KafkaDecodable for i64 {
         let mut buf: [u8; 8] = [0; 8];
         reader.read_exact(&mut buf)?;
 
+        trace!("i64 bytes: {:?}", buf);
         Ok(i64::from_be_bytes(buf))
     }
 }
@@ -124,7 +149,10 @@ impl KafkaDecodable for i64 {
 impl KafkaEncodable for u32 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(&self.to_be_bytes())?;
+        let bytes: &[u8] = &self.to_be_bytes();
+        trace!("u32 bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -135,17 +163,20 @@ impl KafkaDecodable for u32 {
         let mut buf: [u8; 4] = [0; 4];
         reader.read_exact(&mut buf)?;
 
+        trace!("u32 bytes: {:?}", buf);
         Ok(u32::from_be_bytes(buf))
     }
 }
 
 // VARINT
-
-
 impl KafkaEncodable for VarI32 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_varint(*self)?;
+        let mut bytes_vec: Vec<u8> = Vec::new();
+        bytes_vec.write_varint(*self)?;
+
+        trace!("VarI32 bytes: {:?}", bytes_vec);
+        writer.write_all(&*bytes_vec);
         Ok(())
     }
 }
@@ -153,8 +184,10 @@ impl KafkaEncodable for VarI32 {
 impl KafkaDecodable for VarI32 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<VarI32> {
-        let var_i32: VarI32 = reader.read_varint().map(|var_i32| VarI32(var_i32))?;
-        Ok(var_i32)
+        let var_i32: i32 = reader.read_varint()?;
+        trace!(var_i32);
+
+        Ok(VarI32(var_i32))
     }
 }
 
@@ -162,7 +195,11 @@ impl KafkaDecodable for VarI32 {
 impl KafkaEncodable for VarI64 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_varint(*self)?;
+        let mut bytes_vec: Vec<u8> = Vec::new();
+        bytes_vec.write_varint(*self)?;
+
+        trace!("VarI64 bytes: {:?}", bytes_vec);
+        writer.write_all(&*bytes_vec);
         Ok(())
     }
 }
@@ -170,8 +207,10 @@ impl KafkaEncodable for VarI64 {
 impl KafkaDecodable for VarI64 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<VarI64> {
-        let var_i64: VarI64 = reader.read_varint().map(|var_i64| VarI64(var_i64))?;
-        Ok(var_i64)
+        let var_i64: i64 = reader.read_varint()?;
+        trace!(var_i64);
+
+        Ok(VarI64(var_i64))
     }
 }
 
@@ -179,7 +218,10 @@ impl KafkaDecodable for VarI64 {
 impl KafkaEncodable for Uuid {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(self.as_bytes().as_slice())?;
+        let bytes: &[u8] = self.as_bytes().as_slice();
+        trace!("uuid bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -190,6 +232,7 @@ impl KafkaDecodable for Uuid {
         let mut buf: [u8; 16] = [0; 16];
         reader.read_exact(&mut buf)?;
 
+        trace!("uuid bytes: {:?}", buf);
         Ok(Uuid::from_bytes(buf))
     }
 }
@@ -198,7 +241,10 @@ impl KafkaDecodable for Uuid {
 impl KafkaEncodable for f64 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_all(&self.to_be_bytes())?;
+        let bytes: &[u8] = &self.to_be_bytes();
+        trace!("f64 bytes: {:?}", bytes);
+
+        writer.write_all(bytes)?;
         Ok(())
     }
 }
@@ -209,6 +255,7 @@ impl KafkaDecodable for f64 {
         let mut buf: [u8; 8] = [0; 8];
         reader.read_exact(&mut buf)?;
 
+        trace!("f64 bytes: {:?}", buf);
         Ok(f64::from_be_bytes(buf))
     }
 }
@@ -264,6 +311,8 @@ impl KafkaEncodable for String {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
         let bytes: &[u8] = self.as_bytes();
+        trace!("String bytes: {:?}", bytes);
+
         write_bytes_with_size_header!(writer, bytes, i16);
         Ok(())
     }
@@ -272,7 +321,15 @@ impl KafkaEncodable for String {
 impl KafkaDecodable for String {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<String> {
-        read_bytes_with_size_header!(reader, i16, buf, String::from_utf8(buf))
+        read_bytes_with_size_header!(
+            reader,
+            i16,
+            buf,
+            {
+                trace!("String bytes: {:?}", buf);
+                String::from_utf8(buf)
+            }
+        )
     }
 }
 
@@ -280,7 +337,11 @@ impl KafkaDecodable for String {
 impl KafkaEncodable for UnsignedVarInt32 {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        writer.write_varint(*self)?;
+        let mut bytes: Vec<u8> = Vec::new();
+        bytes.write_varint(*self)?;
+        trace!("UnsignedVarInt32 bytes: {:?}", bytes);
+
+        writer.write_all(&*bytes);
         Ok(())
     }
 }
@@ -288,8 +349,10 @@ impl KafkaEncodable for UnsignedVarInt32 {
 impl KafkaDecodable for UnsignedVarInt32 {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<UnsignedVarInt32> {
-        let uvar_i32: UnsignedVarInt32 = reader.read_varint().map(|var_u32| UnsignedVarInt32(var_u32))?;
-        Ok(uvar_i32)
+        let var_u32: u32 = reader.read_varint()?;
+        trace!(var_u32);
+
+        Ok(UnsignedVarInt32(var_u32))
     }
 }
 
@@ -298,6 +361,7 @@ impl KafkaEncodable for CompactString {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
         let bytes: &[u8] = self.as_bytes();
+        trace!("CompactString bytes: {:?}", bytes);
         write_bytes_with_unsigned_varint_size_header(writer, bytes)
     }
 }
@@ -306,6 +370,7 @@ impl KafkaDecodable for CompactString {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<CompactString> {
         let bytes: Vec<u8> = read_bytes_with_unsigned_varint_size_header(reader)?;
+        trace!("CompactString bytes: {:?}", bytes);
 
         match String::from_utf8(bytes) {
             Ok(s) => Ok(CompactString(s)),
@@ -324,6 +389,7 @@ impl KafkaEncodable for NullableString {
 
         let string: String = self.0.unwrap();
         let bytes: &[u8] = string.as_bytes();
+        trace!("NullableString bytes: {:?}", bytes);
 
         write_bytes_with_size_header!(writer, bytes, i16);
         Ok(())
@@ -340,6 +406,8 @@ impl KafkaDecodable for NullableString {
 
         let mut bytes: Vec<u8> = vec![0; bytes_length as usize];
         reader.read_exact(&mut *bytes)?;
+        trace!("NullableString bytes: {:?}", bytes);
+
         match String::from_utf8(bytes) {
             Ok(s) => Ok(NullableString(Some(s))),
             Err(e) => Err(e.into())
@@ -368,9 +436,10 @@ impl KafkaDecodable for CompactNullableString {
         if (*bytes_length) == 0u32 {
             return Ok(CompactNullableString(None));
         }
-
         let mut bytes: Vec<u8> = vec![0; (*bytes_length - 1) as usize];
         reader.read_exact(&mut *bytes)?;
+        trace!("CompactNullableString bytes: {:?}", bytes);
+
         match String::from_utf8(bytes) {
             Ok(s) => Ok(CompactNullableString(Some(s))),
             Err(e) => Err(e.into())
@@ -382,6 +451,7 @@ impl KafkaDecodable for CompactNullableString {
 impl KafkaEncodable for Vec<u8> {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
+        trace!("Vec<u8> bytes: {:?}", &*self);
         write_bytes_with_size_header!(writer, &*self, i32);
         Ok(())
     }
@@ -390,7 +460,13 @@ impl KafkaEncodable for Vec<u8> {
 impl KafkaDecodable for Vec<u8> {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<Vec<u8>> {
-        read_bytes_with_size_header!(reader, i32, buf, Ok::<Vec<u8>, Error>(buf.to_vec()))
+        read_bytes_with_size_header!(
+            reader, i32, buf,
+            {
+                trace!("Vec<u8> bytes: {:?}", buf);
+                Ok::<Vec<u8>, Error>(buf.to_vec())
+            }
+        )
     }
 }
 
@@ -398,7 +474,9 @@ impl KafkaDecodable for Vec<u8> {
 impl KafkaEncodable for CompactBytes {
     #[instrument]
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        write_bytes_with_unsigned_varint_size_header(writer, self.as_slice())
+        let bytes: &[u8] = self.as_slice();
+        trace!("CompactBytes bytes: {:?}", bytes);
+        write_bytes_with_unsigned_varint_size_header(writer, bytes)
     }
 }
 
@@ -406,6 +484,7 @@ impl KafkaDecodable for CompactBytes {
     #[instrument]
     fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<CompactBytes> {
         let bytes: Vec<u8> = read_bytes_with_unsigned_varint_size_header(reader)?;
+        trace!("CompactBytes bytes: {:?}", bytes);
         Ok(CompactBytes(bytes))
     }
 }
@@ -419,6 +498,7 @@ impl KafkaEncodable for NullableBytes {
         }
 
         let bytes: &[u8] = &*self.0.unwrap();
+        trace!("NullableBytes bytes: {:?}", bytes);
 
         write_bytes_with_size_header!(writer, bytes, i32);
         Ok(())
@@ -435,6 +515,8 @@ impl KafkaDecodable for NullableBytes {
 
         let mut bytes: Vec<u8> = vec![0; bytes_length as usize];
         reader.read_exact(&mut *bytes)?;
+
+        trace!("NullableBytes bytes: {:?}", bytes);
         Ok(NullableBytes(Some(bytes)))
     }
 }
@@ -448,6 +530,7 @@ impl KafkaEncodable for CompactNullableBytes {
         }
 
         let bytes: &[u8] = &*self.as_mut().unwrap();
+        trace!("CompactNullableBytes bytes: {:?}", bytes);
         write_bytes_with_unsigned_varint_size_header(writer, bytes)
     }
 }
@@ -463,6 +546,8 @@ impl KafkaDecodable for CompactNullableBytes {
 
         let mut bytes: Vec<u8> = vec![0; (*bytes_length - 1) as usize];
         reader.read_exact(&mut *bytes)?;
+
+        trace!("CompactNullableByets bytes: {:?}", bytes);
         Ok(CompactNullableBytes(Some(bytes)))
     }
 }
@@ -476,8 +561,16 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for Array<T> {
         trace!(num_elements);
 
         num_elements.to_kafka_bytes(writer)?;
+
+        let mut bytes: Vec<u8> = Vec::new();
         for element in elements {
-            element.to_kafka_bytes(writer)?;
+            trace!("element: {:?}", element);
+
+            element.to_kafka_bytes(&mut bytes)?;
+            trace!("element bytes: {:?}", bytes);
+
+            writer.write_all(&*bytes);
+            bytes.clear();
         }
         Ok(())
     }
@@ -492,6 +585,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for Array<T> {
         let mut elements: Vec<T> = Vec::new();
         for _ in 0..num_elements {
             let element: T = T::from_kafka_bytes(reader)?;
+            trace!("element: {:?}", element);
             elements.push(element);
         }
         Ok(Array::<T>::new(elements))
@@ -511,8 +605,15 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for NullableArra
         trace!(num_elements);
         num_elements.to_kafka_bytes(writer)?;
 
+        let mut bytes: Vec<u8> = Vec::new();
         for element in elements {
-            element.to_kafka_bytes(writer)?;
+            trace!("element: {:?}", element);
+
+            element.to_kafka_bytes(&mut bytes)?;
+            trace!("element bytes: {:?}", bytes);
+
+            writer.write_all(&*bytes);
+            bytes.clear();
         }
         Ok(())
     }
@@ -531,6 +632,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for NullableArra
 
         for _ in 0..num_elements {
             let element: T = T::from_kafka_bytes(reader)?;
+            trace!("element: {:?}", element);
             elements.push(element);
         }
         Ok(NullableArray::<T>::new(Some(elements)))
@@ -547,8 +649,15 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for CompactArray
 
         UnsignedVarInt32(num_elements + 1u32).to_kafka_bytes(writer)?;
 
+        let mut bytes: Vec<u8> = Vec::new();
         for element in elements {
-            element.to_kafka_bytes(writer)?;
+            trace!("element: {:?}", element);
+
+            element.to_kafka_bytes(&mut bytes)?;
+            trace!("element bytes: {:?}", bytes);
+
+            writer.write_all(&*bytes);
+            bytes.clear();
         }
         Ok(())
     }
@@ -564,8 +673,9 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for CompactArray
         let mut elements: Vec<T> = Vec::new();
 
         for _ in 0..num_elements {
-            let t: T = T::from_kafka_bytes(reader)?;
-            elements.push(t);
+            let element: T = T::from_kafka_bytes(reader)?;
+            trace!("element: {:?}", element);
+            elements.push(element);
         }
         Ok(CompactArray::<T>::new(elements))
     }
@@ -581,8 +691,15 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for VarArray<T> 
         trace!(num_elements);
         UnsignedVarInt32(num_elements).to_kafka_bytes(writer)?;
 
+        let mut bytes: Vec<u8> = Vec::new();
         for element in elements {
-            element.to_kafka_bytes(writer)?;
+            trace!("element: {:?}", element);
+
+            element.to_kafka_bytes(&mut bytes)?;
+            trace!("element bytes: {:?}", bytes);
+
+            writer.write_all(&*bytes);
+            bytes.clear();
         }
         Ok(())
     }
@@ -598,6 +715,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for VarArray<T> 
         let mut elements: Vec<T> = Vec::new();
         for _ in 0..num_elements {
             let element: T = T::from_kafka_bytes(reader)?;
+            trace!("element: {:?}", element);
             elements.push(element);
         }
         Ok(VarArray::<T>::new(elements))
@@ -617,8 +735,15 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaEncodable for CompactNulla
         trace!(num_elements);
         UnsignedVarInt32(num_elements + 1u32).to_kafka_bytes(writer)?;
 
+        let mut bytes: Vec<u8> = Vec::new();
         for element in elements {
-            element.to_kafka_bytes(writer)?;
+            trace!("element: {:?}", element);
+
+            element.to_kafka_bytes(&mut bytes)?;
+            trace!("element bytes: {:?}", bytes);
+
+            writer.write_all(&*bytes);
+            bytes.clear();
         }
         Ok(())
     }
@@ -638,6 +763,7 @@ impl<T: KafkaEncodable + KafkaDecodable + Debug> KafkaDecodable for CompactNulla
         let mut elements: Vec<T> = Vec::new();
         for _ in 0..num_elements - 1u32 {
             let element: T = T::from_kafka_bytes(reader)?;
+            trace!("element: {:?}", element);
             elements.push(element);
         }
         Ok(CompactNullableArray::<T>::new(Some(elements)))

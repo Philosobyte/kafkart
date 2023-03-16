@@ -10,7 +10,7 @@ use crate::protocol::api_versions::ApiVersionsRequestV3;
 use crate::protocol::headers::RequestHeaderV2;
 use crate::protocol::tags::TaggedFields;
 
-pub struct PairWithI32EncodedSize<T1, T2>(T1, T2) where
+pub struct PairWithI32EncodedSize<T1, T2>(pub T1, pub T2) where
     T1: KafkaEncodable + KafkaDecodable + Debug,
     T2: KafkaEncodable + KafkaDecodable + Debug;
 

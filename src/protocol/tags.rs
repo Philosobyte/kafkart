@@ -12,3 +12,11 @@ pub struct RawTaggedField {
 pub struct TaggedFields {
     pub tags: VarArray<RawTaggedField>
 }
+
+impl TaggedFields {
+    pub fn new() -> Self {
+        TaggedFields {
+            tags: VarArray(Vec::new())
+        }
+    }
+}
