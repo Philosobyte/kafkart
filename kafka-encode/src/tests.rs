@@ -14,6 +14,22 @@ fn print_spans_and_events_during_tests() {
         .init();
 }
 
+macro_rules! test_serialize {
+    ($object:expr, $expected_bytes:expr) => {
+        let mut write_buffer: Vec<u8> = Vec::new();
+
+        $object.to_kafka_bytes(&mut write_buffer).expect("Unable to serialize object");
+        assert_eq!(write_buffer, $expected_bytes);
+    }
+}
+
+macro_rules! test_deserialize {
+    ($bytes:expr, $expected_object:expr) => {
+        let object = $bytes::from_kafka_bytes(&mut &*bytes).expect("Unable to deserialize object");
+        assert_eq!(object, $expected_object);
+    }
+}
+
 // BOOLEAN
 #[test]
 fn test_serialize_true() {

@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use anyhow::{anyhow, Result};
 use std::io::{Error, ErrorKind, Read, Write};
 use bytes::{Bytes, BytesMut};
-use kafka_encode::{KafkaDecodable, KafkaEncodable};
+use kafka_encode::KafkaEncodable;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ApiKey {

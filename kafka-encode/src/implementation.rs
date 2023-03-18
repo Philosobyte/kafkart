@@ -635,45 +635,6 @@ impl<T: KafkaEncodable + Debug> KafkaEncodable for CompactArray<T> {
     }
 }
 
-// VARARRAY
-impl<T: KafkaEncodable + Debug> KafkaEncodable for VarArray<T> {
-    #[instrument]
-    fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
-        let elements: Vec<T> = self.0;
-
-        let num_elements: u32 = elements.len() as u32;
-        trace!(num_elements);
-        UnsignedVarInt32(num_elements).to_kafka_bytes(writer)?;
-
-        let mut bytes: Vec<u8> = Vec::new();
-        for element in elements {
-            trace!("element: {:?}", element);
-
-            element.to_kafka_bytes(&mut bytes)?;
-            trace!("element bytes: {:?}", bytes);
-
-            writer.write_all(&*bytes);
-            bytes.clear();
-        }
-        Ok(())
-    }
-
-    #[instrument]
-    fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<VarArray<T>> {
-        let num_elements_varint: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;
-        let num_elements: u32 = num_elements_varint.0;
-        trace!(num_elements);
-
-        let mut elements: Vec<T> = Vec::new();
-        for _ in 0..num_elements {
-            let element: T = T::from_kafka_bytes(reader)?;
-            trace!("element: {:?}", element);
-            elements.push(element);
-        }
-        Ok(VarArray::<T>::new(elements))
-    }
-}
-
 // COMPACT_NULLABLE_ARRAY
 impl<T: KafkaEncodable + Debug> KafkaEncodable for CompactNullableArray<T> {
     #[instrument]
@@ -717,5 +678,43 @@ impl<T: KafkaEncodable + Debug> KafkaEncodable for CompactNullableArray<T> {
             elements.push(element);
         }
         Ok(CompactNullableArray::<T>::new(Some(elements)))
+    }
+}
+
+impl<T: KafkaEncodable + Debug> KafkaEncodable for VarArray<T> {
+    #[instrument]
+    fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()> {
+        let elements: Vec<T> = self.0;
+
+        let num_elements: u32 = elements.len() as u32;
+        trace!(num_elements);
+        UnsignedVarInt32(num_elements).to_kafka_bytes(writer)?;
+
+        let mut bytes: Vec<u8> = Vec::new();
+        for element in elements {
+            trace!("element: {:?}", element);
+
+            element.to_kafka_bytes(&mut bytes)?;
+            trace!("element bytes: {:?}", bytes);
+
+            writer.write_all(&*bytes);
+            bytes.clear();
+        }
+        Ok(())
+    }
+
+    #[instrument]
+    fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<VarArray<T>> {
+        let num_elements_varint: UnsignedVarInt32 = UnsignedVarInt32::from_kafka_bytes(reader)?;
+        let num_elements: u32 = num_elements_varint.0;
+        trace!(num_elements);
+
+        let mut elements: Vec<T> = Vec::new();
+        for _ in 0..num_elements {
+            let element: T = T::from_kafka_bytes(reader)?;
+            trace!("element: {:?}", element);
+            elements.push(element);
+        }
+        Ok(VarArray::<T>::new(elements))
     }
 }

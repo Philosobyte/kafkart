@@ -127,24 +127,6 @@ impl<T: KafkaEncodable + Debug> Deref for CompactArray<T> {
     }
 }
 
-// VARARRAY
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VarArray<T: KafkaEncodable + Debug>(pub Vec<T>);
-
-impl<T: KafkaEncodable + Debug> VarArray<T> {
-    pub(crate) fn new(v: Vec<T>) -> Self {
-        VarArray(v)
-    }
-}
-
-impl<T: KafkaEncodable + Debug> Deref for VarArray<T> {
-    type Target = Vec<T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
 // COMPACT_NULLABLE_ARRAY
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CompactNullableArray<T: KafkaEncodable + Debug>(pub Option<Vec<T>>);
@@ -162,6 +144,22 @@ impl<T: KafkaEncodable + Debug> Deref for CompactNullableArray<T> {
         &self.0
     }
 }
-//
-// // for tagged fields
-// pub struct
+
+/// VarArrays, as defined here, are containers which make it easier to encode tagged fields.
+/// These VarArrays are not defined in the Kafka protocol docs.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct VarArray<T: KafkaEncodable + Debug>(pub Vec<T>);
+
+impl<T: KafkaEncodable + Debug> VarArray<T> {
+    pub(crate) fn new(v: Vec<T>) -> Self {
+        VarArray(v)
+    }
+}
+
+impl<T: KafkaEncodable + Debug> Deref for VarArray<T> {
+    type Target = Vec<T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

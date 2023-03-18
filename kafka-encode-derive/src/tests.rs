@@ -1,10 +1,10 @@
 use std::fmt::Debug;
 use syn::{DeriveInput, File};
-use crate::{generate_kafka_encodable_impl, generate_kafka_decodable_impl};
+use crate::generate_kafka_encodable_impl;
 
 #[test]
 fn test_derive_kafka_encodable() {
-    let input: proc_macro2::TokenStream = quote::quote! {
+    let target_struct: proc_macro2::TokenStream = quote::quote! {
         pub struct StructWithNamedFields {
             pub string: String,
             pub integer: i32,
@@ -14,8 +14,8 @@ fn test_derive_kafka_encodable() {
         }
     };
 
-    let abstract_syntax_tree: DeriveInput = syn::parse2(input).unwrap();
-    let output: proc_macro2::TokenStream = generate_kafka_encodable_impl(abstract_syntax_tree).unwrap();
+    let abstract_syntax_tree: DeriveInput = syn::parse2(target_struct).unwrap();
+    let generated_output: proc_macro2::TokenStream = generate_kafka_encodable_impl(abstract_syntax_tree).unwrap();
 
     let expected_output: proc_macro2::TokenStream = quote::quote! {
         impl KafkaEncodable for StructWithNamedFields {
@@ -28,28 +28,7 @@ fn test_derive_kafka_encodable() {
                 self.compact_string_array.to_kafka_bytes(writer)?;
                 Ok(())
             }
-        }
-    };
-    assert_eq!(output.to_string(), expected_output.to_string());
-}
 
-#[test]
-fn test_derive_kafka_decodable() {
-    let input: proc_macro2::TokenStream = quote::quote! {
-        pub struct StructWithNamedFields {
-            pub string: String,
-            pub integer: i32,
-            pub byte_vec: Vec<u8>,
-            pub string_vec: Vec<String>,
-            pub compact_string_array: CompactArray<String>
-        }
-    };
-
-    let abstract_syntax_tree: DeriveInput = syn::parse2(input).unwrap();
-    let output: proc_macro2::TokenStream = generate_kafka_decodable_impl(abstract_syntax_tree).unwrap();
-
-    let expected_output: proc_macro2::TokenStream = quote::quote! {
-        impl KafkaDecodable for StructWithNamedFields {
             #[tracing::instrument]
             fn from_kafka_bytes<R: std::io::Read + std::fmt::Debug>(reader: &mut R) -> anyhow::Result<StructWithNamedFields> {
                 let s: StructWithNamedFields = StructWithNamedFields {
@@ -63,12 +42,12 @@ fn test_derive_kafka_decodable() {
             }
         }
     };
-    assert_eq!(output.to_string(), expected_output.to_string());
+    assert_eq!(generated_output.to_string(), expected_output.to_string());
 }
 
 #[test]
 fn test_derive_kafka_encodable_for_tagged_fields() {
-    let input: proc_macro2::TokenStream = quote::quote! {
+    let target_struct: proc_macro2::TokenStream = quote::quote! {
         #[kafka_encodable_tagged_fields]
         pub struct StructWithTags {
             pub string: Option<String>,
@@ -77,11 +56,8 @@ fn test_derive_kafka_encodable_for_tagged_fields() {
         }
     };
 
-    let abstract_syntax_tree: DeriveInput = syn::parse2(input).unwrap();
+    let abstract_syntax_tree: DeriveInput = syn::parse2(target_struct).unwrap();
     let output: proc_macro2::TokenStream = generate_kafka_encodable_impl(abstract_syntax_tree).unwrap();
-
-    let file = syn::parse_file(output.to_string().as_str()).unwrap();
-    println!("{}", prettyplease::unparse(&file));
 
     let expected_output: proc_macro2::TokenStream = quote::quote! {
         impl KafkaEncodable for StructWithTags {
@@ -142,30 +118,7 @@ fn test_derive_kafka_encodable_for_tagged_fields() {
                 };
                 Ok(())
             }
-        }
-    };
-    assert_eq!(output.to_string(), expected_output.to_string());
-}
 
-#[test]
-fn test_kafka_decodable_for_tagged_fields() {
-    let input: proc_macro2::TokenStream = quote::quote! {
-        #[kafka_decodable_tagged_fields]
-        pub struct StructWithTags {
-            pub string: Option<String>,
-            pub integer: Option<i32>,
-            pub compact_string_array: Option<CompactArray<String>>
-        }
-    };
-
-    let abstract_syntax_tree: DeriveInput = syn::parse2(input).unwrap();
-    let output: proc_macro2::TokenStream = generate_kafka_decodable_impl(abstract_syntax_tree).unwrap();
-
-    let file = syn::parse_file(output.to_string().as_str()).unwrap();
-    println!("{}", prettyplease::unparse(&file));
-
-    let expected_output: proc_macro2::TokenStream = quote::quote! {
-        impl KafkaDecodable for StructWithTags {
             #[tracing::instrument]
             fn from_kafka_bytes<R: std::io::Read + std::fmt::Debug>(
                 reader: &mut R
@@ -184,7 +137,7 @@ fn test_kafka_decodable_for_tagged_fields() {
                                 Some(existing_field) =>
                                     return Err(
                                         anyhow::anyhow!(
-                                            "tagged field was already set! {:?}", existing_field
+                                            "Visiting a tagged field which has already been set! {:?}", existing_field
                                         )
                                     ),
                                 None => {
@@ -200,7 +153,7 @@ fn test_kafka_decodable_for_tagged_fields() {
                                 Some(existing_field) =>
                                     return Err(
                                         anyhow::anyhow!(
-                                            "tagged field was already set! {:?}", existing_field
+                                            "Visiting a tagged field which has already been set! {:?}", existing_field
                                         )
                                     ),
                                 None => {
@@ -216,7 +169,7 @@ fn test_kafka_decodable_for_tagged_fields() {
                                 Some(existing_field) =>
                                     return Err(
                                         anyhow::anyhow!(
-                                            "tagged field was already set! {:?}", existing_field
+                                            "Visiting a tagged field which has already been set! {:?}", existing_field
                                         )
                                     ),
                                 None => {
@@ -224,7 +177,7 @@ fn test_kafka_decodable_for_tagged_fields() {
                                         reader
                                     )?;
                                     compact_string_array = Some(
-                                        CompactArray::from_kafka_bytes(reader)?
+                                        CompactArray::<String>::from_kafka_bytes(reader)?
                                     );
                                 }
                             };
@@ -242,6 +195,5 @@ fn test_kafka_decodable_for_tagged_fields() {
             }
         }
     };
-
     assert_eq!(output.to_string(), expected_output.to_string());
 }

@@ -39,5 +39,5 @@ use std::io::{Read, Write};
 pub trait KafkaEncodable {
     fn to_kafka_bytes<W: Write + Debug>(self, writer: &mut W) -> Result<()>;
 
-    fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<Self>;
+    fn from_kafka_bytes<R: Read + Debug>(reader: &mut R) -> Result<Self> where Self: Sized;
 }

@@ -1,5 +1,5 @@
 use kafka_encode::primitives::{Array, CompactNullableBytes, CompactString, NullableArray, VarI32, VarI64};
-use kafka_encode::{KafkaDecodable, KafkaEncodable};
+use kafka_encode::KafkaEncodable;
 use kafka_encode_derive::KafkaEncodable;
 
 #[derive(Debug, KafkaEncodable, Eq, PartialEq, Clone)]
