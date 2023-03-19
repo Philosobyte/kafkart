@@ -23,13 +23,17 @@ mod api_versions;
 mod requests;
 mod networking;
 
-pub type ApiVersion = i16;
+pub(crate) type ApiVersion = i16;
 
-pub trait KafkaRequest: KafkaEncodable + Debug {
+pub(crate) trait KafkaRequest: KafkaEncodable + Debug + PartialEq {
     fn get_api_key() -> ApiKey;
     fn get_version() -> ApiVersion;
     fn get_response_header_version() -> ApiVersion;
 }
 
-pub trait KafkaResponse: KafkaEncodable + Debug {
+pub(crate) trait KafkaResponse: KafkaEncodable + Debug + PartialEq {
+}
+
+struct SupportedApiVersions {
+
 }

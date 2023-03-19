@@ -39,15 +39,15 @@ fn deserialize_response_header_and_get_correlation_id<R: Read + Debug>(mut reade
 }
 
 #[derive(Debug)]
-pub struct KafkaNetworkingClient<'a> {
+pub(crate) struct SingleUseKafkaNetworkingClient<'a> {
     pub bootstrap_url: &'a str,
     pub client_id: &'a str,
     random: ThreadRng
 }
 
-impl<'a> KafkaNetworkingClient<'a> {
+impl<'a> SingleUseKafkaNetworkingClient<'a> {
     fn new(bootstrap_url: &'a str, client_id: &'a str) -> Self {
-        KafkaNetworkingClient {
+        SingleUseKafkaNetworkingClient {
             bootstrap_url,
             client_id,
             random: rand::thread_rng()
@@ -94,13 +94,16 @@ impl<'a> KafkaNetworkingClient<'a> {
 }
 
 
-// fn test_request_and_response<Request: KafkaRequest, Respon>() {
-//
-// }
+pub(crate) fn test_request_and_response<Request: KafkaRequest, Response: KafkaResponse>(request: Request, expected_response: Response) {
+    let mut networking_client: SingleUseKafkaNetworkingClient = SingleUseKafkaNetworkingClient::new("127.0.0.1:9092", "rusty");
+    let response: Response = networking_client.send_request_and_get_response(request)
+        .expect("Failed to receive and parse response from the server");
+    assert_eq!(response, expected_response);
+}
 
 #[test]
 fn test_networking_stuff_with_struct() {
-    let mut networking_client: KafkaNetworkingClient = KafkaNetworkingClient::new("127.0.0.1:9092", "rusty");
+    let mut networking_client: SingleUseKafkaNetworkingClient = SingleUseKafkaNetworkingClient::new("127.0.0.1:9092", "rusty");
     let request: ApiVersionsRequestV3 = ApiVersionsRequestV3 {
         client_software_name: CompactString(String::from("kafkart")),
         client_software_version: CompactString(String::from("0.0.1")),

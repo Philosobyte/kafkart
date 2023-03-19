@@ -114,3 +114,388 @@ pub struct FinalizedFeatureKeyV3 {
     pub max_version: i16,
     pub tag_buffer: TaggedFields
 }
+
+#[cfg(test)]
+mod tests {
+    use kafka_encode::primitives::{CompactArray, CompactString, VarArray};
+    use crate::protocol::api_key::ApiKey::*;
+    use crate::protocol::api_versions::{ApiVersionsRequestV3, ApiVersionsResponseV3, ApiVersionsResponseV3TaggedFields, SupportedApiKeyVersionsV3};
+    use crate::protocol::err::ErrorCode;
+    use crate::protocol::networking::test_request_and_response;
+    use crate::protocol::tags::TaggedFields;
+
+    #[test]
+    fn test_api_versions_request_v3() {
+        let request: ApiVersionsRequestV3 = ApiVersionsRequestV3 {
+            client_software_name: CompactString(String::from("kafkart")),
+            client_software_version: CompactString(String::from("0.0.1")),
+            tag_buffer: TaggedFields {
+                tags: VarArray(Vec::new())
+            }
+        };
+
+        let expected_response = ApiVersionsResponseV3 {
+            error_code: ErrorCode::None,
+            api_keys: CompactArray(vec![
+                SupportedApiKeyVersionsV3 {
+                    api_key: Produce,
+                    min_version: 0,
+                    max_version: 9,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: Fetch,
+                    min_version: 0,
+                    max_version: 13,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: ListOffsets,
+                    min_version: 0,
+                    max_version: 7,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: Metadata,
+                    min_version: 0,
+                    max_version: 12,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                }, SupportedApiKeyVersionsV3 {
+                    api_key: LeaderAndIsr,
+                    min_version: 0,
+                    max_version: 6,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: StopReplica,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: UpdateMetadata,
+                    min_version: 0,
+                    max_version: 7,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: ControlledShutdown,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: OffsetCommit,
+                    min_version: 0,
+                    max_version: 8,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: OffsetFetch,
+                    min_version: 0,
+                    max_version: 8,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: FindCoordinator,
+                    min_version: 0,
+                    max_version: 4,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: JoinGroup,
+                    min_version: 0,
+                    max_version: 9,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: Heartbeat,
+                    min_version: 0,
+                    max_version: 4,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                }, SupportedApiKeyVersionsV3 {
+                    api_key: LeaveGroup,
+                    min_version: 0,
+                    max_version: 5,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: SyncGroup,
+                    min_version: 0,
+                    max_version: 5,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeGroups,
+                    min_version: 0,
+                    max_version: 5,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: ListGroups,
+                    min_version: 0,
+                    max_version: 4,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: SaslHandshake,
+                    min_version: 0,
+                    max_version: 1,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: ApiVersions,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: CreateTopics,
+                    min_version: 0,
+                    max_version: 7,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DeleteTopics,
+                    min_version: 0,
+                    max_version: 6,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DeleteRecords,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: InitProducerId,
+                    min_version: 0,
+                    max_version: 4,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: OffsetForLeaderEpoch,
+                    min_version: 0,
+                    max_version: 4,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AddPartitionsToTxn,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AddOffsetsToTxn,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: EndTxn,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: WriteTxnMarkers,
+                    min_version: 0,
+                    max_version: 1,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: TxnOffsetCommit,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeAcls,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: CreateAcls,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DeleteAcls,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeConfigs,
+                    min_version: 0,
+                    max_version: 4,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AlterConfigs,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AlterReplicaLogDirs,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeLogDirs,
+                    min_version: 0,
+                    max_version: 4,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: SaslAuthenticate,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                }, SupportedApiKeyVersionsV3 {
+                    api_key: CreatePartitions,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: CreateDelegationToken,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: RenewDelegationToken,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: ExpireDelegationToken,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeDelegationToken,
+                    min_version: 0,
+                    max_version: 3,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DeleteGroups,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: ElectLeaders,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: IncrementalAlterConfigs,
+                    min_version: 0,
+                    max_version: 1,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AlterPartitionReassignments,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: ListPartitionReassignments,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: OffsetDelete,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeClientQuotas,
+                    min_version: 0,
+                    max_version: 1,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AlterClientQuotas,
+                    min_version: 0,
+                    max_version: 1,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeUserScramCredentials,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AlterUserScramCredentials,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AlterPartition,
+                    min_version: 0,
+                    max_version: 2,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: UpdateFeatures,
+                    min_version: 0,
+                    max_version: 1,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeCluster,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeProducers,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: DescribeTransactions,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: ListTransactions,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                },
+                SupportedApiKeyVersionsV3 {
+                    api_key: AllocateProducerIds,
+                    min_version: 0,
+                    max_version: 0,
+                    tag_buffer: TaggedFields { tags: VarArray(vec![]) }
+                }
+            ]),
+            throttle_time_ms: 0,
+            tag_buffer: ApiVersionsResponseV3TaggedFields {
+                supported_features: None,
+                finalized_features_epoch: Some(0),
+                finalized_features: None
+            }
+        };
+        test_request_and_response(request, expected_response);
+    }
+}
